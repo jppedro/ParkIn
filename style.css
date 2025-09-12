@@ -1,0 +1,69 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background-color: #121212;
+  color: #fff;
+}
+
+/* Topo */
+.header {
+  background-color: #002f87;
+  padding: 20px;
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+  position: relative;
+  text-align: center;
+}
+
+.header img {
+  width: 100px;
+  position: absolute;
+  right: 20px;
+  top: 20px;
+}
+
+.header h2 {
+  margin: 10px 0 0;
+  font-size: 20px;
+}
+
+.header p {
+  font-size: 14px;
+  color: #ccc;
+}
+
+/* Grid de opções */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  padding: 20px;
+}
+
+.card {
+  background-color: #1f1f1f;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  transition: transform 0.2s;
+}
+
+.card:hover {
+  transform: scale(1.05);
+  cursor: pointer;
+}
+
+.card img {
+  width: 50px;
+  margin-bottom: 10px;
+}
+
+.card p {
+  margin: 0;
+  font-size: 14px;
+  color: #b3b3b3;
+}
+
+.img logo puc {
+  filter: white;
+}
