@@ -1,4 +1,6 @@
 // Função para abrir links externos ao clicar nos cards
 function abrirLink(url) {
-  window.open(url, "_blank");
+  if (url) {
+    window.open(url, "_blank", "noopener,noreferrer");
+  }
 }
