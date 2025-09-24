@@ -1,0 +1,301 @@
+/* Estilos específicos para a página de visualização de vagas */
+
+.parking-container {
+  max-width: 800px;
+  margin: 20px auto;
+  padding: 20px;
+  background-color: #1f1f1f;
+  border-radius: 12px;
+}
+
+.parking-title {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #fff;
+  font-size: 24px;
+}
+
+.parking-info {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.info-card {
+  background-color: #2b2b2b;
+  padding: 15px;
+  border-radius: 8px;
+  text-align: center;
+  min-width: 120px;
+}
+
+.info-card h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #fff;
+}
+
+.info-card p {
+  margin: 5px 0 0;
+  font-size: 14px;
+  color: #ccc;
+}
+
+/* Container para imagem do estacionamento com overlay */
+.parking-image-container {
+  position: relative;
+  max-width: 800px;
+  margin: 0 auto;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #333;
+}
+
+.parking-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 8px;
+}
+
+.parking-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.parking-spot-overlay {
+  position: absolute;
+  border: 2px solid #fff;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  pointer-events: auto;
+  background-color: rgba(136, 136, 136, 0.7);
+  backdrop-filter: blur(1px);
+}
+
+.parking-spot-overlay.occupied {
+  background-color: rgba(255, 68, 68, 0.8);
+  border-color: #cc0000;
+}
+
+.parking-spot-overlay.free {
+  background-color: rgba(68, 255, 68, 0.8);
+  border-color: #00cc00;
+}
+
+.parking-spot-overlay:hover {
+  transform: scale(1.1);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+  z-index: 10;
+}
+
+/* Grid alternativo (fallback) */
+.parking-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
+  gap: 8px;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #333;
+  border-radius: 8px;
+}
+
+.parking-spot {
+  width: 40px;
+  height: 60px;
+  border: 2px solid #666;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: bold;
+  color: #000;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background-color: #888;
+}
+
+.parking-spot.occupied {
+  background-color: #ff4444;
+  border-color: #cc0000;
+}
+
+.parking-spot.free {
+  background-color: #44ff44;
+  border-color: #00cc00;
+}
+
+.parking-spot:hover {
+  transform: scale(1.1);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+.legend {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legend-color {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  border: 2px solid #666;
+}
+
+.legend-color.free {
+  background-color: #44ff44;
+  border-color: #00cc00;
+}
+
+.legend-color.occupied {
+  background-color: #ff4444;
+  border-color: #cc0000;
+}
+
+.legend-color.unknown {
+  background-color: #888;
+}
+
+.loading {
+  text-align: center;
+  color: #fff;
+  font-size: 18px;
+  margin: 40px 0;
+}
+
+.error {
+  text-align: center;
+  color: #ff6b6b;
+  font-size: 16px;
+  margin: 40px 0;
+  padding: 15px;
+  background-color: #2b1f1f;
+  border-radius: 8px;
+}
+
+.refresh-btn {
+  display: block;
+  margin: 20px auto;
+  padding: 12px 24px;
+  background-color: #002f87;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s;
+}
+
+.refresh-btn:hover {
+  background-color: #004bb5;
+}
+
+.last-updated {
+  text-align: center;
+  color: #888;
+  font-size: 12px;
+  margin-top: 15px;
+}
+
+/* Responsividade para dispositivos móveis */
+@media (max-width: 768px) {
+  .parking-container {
+    margin: 10px;
+    padding: 15px;
+  }
+  
+  .parking-grid {
+    grid-template-columns: repeat(8, 1fr);
+    max-width: 100%;
+  }
+  
+  .parking-spot {
+    width: 35px;
+    height: 50px;
+    font-size: 9px;
+  }
+  
+  .parking-info {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .parking-title {
+    font-size: 20px;
+  }
+  
+  .info-card {
+    min-width: 100px;
+  }
+  
+  .legend {
+    gap: 20px;
+  }
+  
+  .refresh-btn {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+}
+
+/* Responsividade para telas muito pequenas */
+@media (max-width: 480px) {
+  .parking-grid {
+    grid-template-columns: repeat(6, 1fr);
+    padding: 15px;
+  }
+  
+  .parking-spot {
+    width: 30px;
+    height: 45px;
+    font-size: 8px;
+  }
+  
+  .parking-info {
+    gap: 10px;
+  }
+  
+  .info-card {
+    padding: 12px;
+    min-width: 90px;
+  }
+  
+  .info-card h3 {
+    font-size: 16px;
+  }
+  
+  .info-card p {
+    font-size: 12px;
+  }
+  
+  .legend {
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+  }
+}

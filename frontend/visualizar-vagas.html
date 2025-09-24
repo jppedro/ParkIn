@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Visualizar Vagas - ParkIn</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="visualizar-vagas.css">
+</head>
+<body>
+
+  <div class="header estacionamento-header">
+    <button class="voltar" onclick="window.location.href='estacionamento.html'">← Voltar</button>
+    <img src="imagem/puc.png" alt="Logo PUC" class="logo-header">
+  </div>
+
+  <div class="parking-container">
+    <h1 class="parking-title">Status do Estacionamento</h1>
+    
+    <div id="loading" class="loading">
+      Carregando informações das vagas...
+    </div>
+    
+    <div id="error" class="error" style="display: none;">
+      Erro ao carregar dados. Verifique se o backend está rodando.
+    </div>
+    
+    <div id="parking-content" style="display: none;">
+      <div class="parking-info">
+        <div class="info-card">
+          <h3 id="total-spots">0</h3>
+          <p>Total de Vagas</p>
+        </div>
+        <div class="info-card">
+          <h3 id="free-spots">0</h3>
+          <p>Vagas Livres</p>
+        </div>
+        <div class="info-card">
+          <h3 id="occupied-spots">0</h3>
+          <p>Vagas Ocupadas</p>
+        </div>
+        <div class="info-card">
+          <h3 id="occupancy-rate">0%</h3>
+          <p>Taxa de Ocupação</p>
+        </div>
+      </div>
+      
+      <div id="parking-image-container" class="parking-image-container">
+        <img id="parking-image" class="parking-image" src="" alt="Imagem do Estacionamento" style="display: none;">
+        <div id="parking-overlay" class="parking-overlay">
+          <!-- Vagas serão sobrepostas aqui -->
+        </div>
+      </div>
+      
+      <div id="parking-grid" class="parking-grid" style="display: none;">
+        <!-- Grid alternativo caso não haja imagem -->
+      </div>
+      
+      <div class="legend">
+        <div class="legend-item">
+          <div class="legend-color free"></div>
+          <span style="color: #fff;">Vaga Livre</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color occupied"></div>
+          <span style="color: #fff;">Vaga Ocupada</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-color unknown"></div>
+          <span style="color: #fff;">Status Desconhecido</span>
+        </div>
+      </div>
+      
+      <button class="refresh-btn" onclick="loadParkingData()">
+        Atualizar Status
+      </button>
+      
+      <div id="last-updated" class="last-updated">
+        <!-- Última atualização será mostrada aqui -->
+      </div>
+    </div>
+  </div>
+
+  <footer class="rodape">
+    <p>v0.0.0.1</p>
+  </footer>
+
+  <script>
+    const API_BASE_URL = 'http://localhost:5001';
+    
+    // Função para carregar dados do estacionamento
+    async function loadParkingData() {
+      const loadingEl = document.getElementById('loading');
+      const errorEl = document.getElementById('error');
+      const contentEl = document.getElementById('parking-content');
+      
+      loadingEl.style.display = 'block';
+      errorEl.style.display = 'none';
+      contentEl.style.display = 'none';
+      
+      try {
+        // Carregar dados das vagas
+        const response = await fetch(`${API_BASE_URL}/parking-spots`);
+        
+        if (!response.ok) {
+          throw new Error(`Erro HTTP: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        document.getElementById('total-spots').textContent = data.total_spots || 0;
+        document.getElementById('free-spots').textContent = data.free_spots || 0;
+        document.getElementById('occupied-spots').textContent = data.occupied_spots || 0;
+        document.getElementById('occupancy-rate').textContent = 
+          data.occupancy_rate ? `${Math.round(data.occupancy_rate)}%` : '0%';
+        
+        // Carregar imagem do estacionamento
+        await loadParkingImage();
+        
+        // Gerar overlay de vagas na imagem
+        generateParkingOverlay(data);
+        
+        // Atualizar timestamp
+        if (data.last_updated) {
+          const date = new Date(data.last_updated);
+          document.getElementById('last-updated').textContent = 
+            `Última atualização: ${date.toLocaleString('pt-BR')}`;
+        }
+        
+        // Mostrar conteúdo
+        loadingEl.style.display = 'none';
+        contentEl.style.display = 'block';
+        
+      } catch (error) {
+        console.error('Erro ao carregar dados:', error);
+        loadingEl.style.display = 'none';
+        errorEl.style.display = 'block';
+        errorEl.innerHTML = `
+          <strong>Erro ao carregar dados:</strong><br>
+          ${error.message}<br>
+          <small>Verifique se o backend está rodando em ${API_BASE_URL}</small>
+        `;
+      }
+    }
+
+    // Função para carregar a imagem do estacionamento
+    async function loadParkingImage() {
+      const imageEl = document.getElementById('parking-image');
+      const imageContainerEl = document.getElementById('parking-image-container');
+      const gridEl = document.getElementById('parking-grid');
+      
+      try {
+        // Tentar carregar a última imagem
+        const imageUrl = `${API_BASE_URL}/latest-image?timestamp=${Date.now()}`;
+        
+        return new Promise((resolve, reject) => {
+          imageEl.onload = () => {
+            imageEl.style.display = 'block';
+            imageContainerEl.style.display = 'block';
+            gridEl.style.display = 'none';
+            resolve();
+          };
+          
+          imageEl.onerror = () => {
+            // Se não conseguir carregar a imagem, usar grid alternativo
+            imageContainerEl.style.display = 'none';
+            gridEl.style.display = 'block';
+            reject(new Error('Imagem não encontrada'));
+          };
+          
+          imageEl.src = imageUrl;
+        });
+        
+      } catch (error) {
+        console.log('Usando grid alternativo:', error.message);
+        // Fallback para grid se não conseguir carregar imagem
+        imageContainerEl.style.display = 'none';
+        gridEl.style.display = 'block';
+      }
+    }
+
+    // Função para gerar overlay de vagas sobre a imagem
+    function generateParkingOverlay(data) {
+      const overlayEl = document.getElementById('parking-overlay');
+      const imageEl = document.getElementById('parking-image');
+      
+      overlayEl.innerHTML = '';
+      
+      if (!imageEl.complete || imageEl.style.display === 'none') {
+        // Se a imagem não carregou, usar grid alternativo
+        generateParkingGrid(data);
+        return;
+      }
+      
+      const totalSpots = data.total_spots || 50;
+      const occupiedSpots = data.occupied_spots || 0;
+      const freeSpots = data.free_spots || 0;
+      
+      // Obter dimensões da imagem
+      const imageRect = imageEl.getBoundingClientRect();
+      const imageWidth = imageEl.offsetWidth;
+      const imageHeight = imageEl.offsetHeight;
+      
+      // Definir grid de vagas (simulando posições no estacionamento)
+      // Em uma implementação real, essas posições viriam da análise do backend
+      const spotsPerRow = Math.ceil(Math.sqrt(totalSpots));
+      const spotWidth = 60;
+      const spotHeight = 40;
+      const marginX = (imageWidth - (spotsPerRow * spotWidth)) / (spotsPerRow + 1);
+      const marginY = 50;
+      
+      for (let i = 1; i <= totalSpots; i++) {
+        const spot = document.createElement('div');
+        spot.className = 'parking-spot-overlay';
+        spot.textContent = i.toString().padStart(2, '0');
+        spot.setAttribute('data-spot-id', i);
+        
+        // Calcular posição da vaga
+        const row = Math.floor((i - 1) / spotsPerRow);
+        const col = (i - 1) % spotsPerRow;
+        
+        const x = marginX + col * (spotWidth + marginX);
+        const y = marginY + row * (spotHeight + 20);
+        
+        // Posicionar vaga
+        spot.style.left = `${x}px`;
+        spot.style.top = `${y}px`;
+        spot.style.width = `${spotWidth}px`;
+        spot.style.height = `${spotHeight}px`;
+        
+        // Definir status da vaga
+        if (i <= occupiedSpots) {
+          spot.classList.add('occupied');
+          spot.title = `Vaga ${i} - Ocupada`;
+        } else if (i <= occupiedSpots + freeSpots) {
+          spot.classList.add('free');
+          spot.title = `Vaga ${i} - Livre`;
+        } else {
+          spot.title = `Vaga ${i} - Status desconhecido`;
+        }
+        
+        // Adicionar evento de clique
+        spot.addEventListener('click', () => {
+          showSpotDetails(i, spot.classList.contains('occupied') ? 'ocupada' : 
+                            spot.classList.contains('free') ? 'livre' : 'desconhecida');
+        });
+        
+        overlayEl.appendChild(spot);
+      }
+    }
+    
+    // Função para gerar o grid de vagas
+    function generateParkingGrid(data) {
+      const gridEl = document.getElementById('parking-grid');
+      gridEl.innerHTML = '';
+      
+      const totalSpots = data.total_spots || 50; // Valor padrão se não houver dados
+      const occupiedSpots = data.occupied_spots || 0;
+      const freeSpots = data.free_spots || 0;
+      
+      // Gerar vagas (simulando um layout de estacionamento)
+      for (let i = 1; i <= totalSpots; i++) {
+        const spot = document.createElement('div');
+        spot.className = 'parking-spot';
+        spot.textContent = i.toString().padStart(2, '0');
+        spot.setAttribute('data-spot-id', i);
+        
+        // Definir status da vaga (por enquanto aleatório baseado nos dados)
+        // Em uma implementação real, isso viria do backend com posições específicas
+        if (i <= occupiedSpots) {
+          spot.classList.add('occupied');
+          spot.title = `Vaga ${i} - Ocupada`;
+        } else if (i <= occupiedSpots + freeSpots) {
+          spot.classList.add('free');
+          spot.title = `Vaga ${i} - Livre`;
+        } else {
+          spot.title = `Vaga ${i} - Status desconhecido`;
+        }
+        
+        // Adicionar evento de clique
+        spot.addEventListener('click', () => {
+          showSpotDetails(i, spot.classList.contains('occupied') ? 'ocupada' : 
+                            spot.classList.contains('free') ? 'livre' : 'desconhecida');
+        });
+        
+        gridEl.appendChild(spot);
+      }
+    }
+    
+    // Função para mostrar detalhes da vaga
+    function showSpotDetails(spotNumber, status) {
+      alert(`Vaga ${spotNumber}\nStatus: ${status}`);
+    }
+    
+    // Carregar dados quando a página carregar
+    document.addEventListener('DOMContentLoaded', () => {
+      loadParkingData();
+      
+      // Atualizar automaticamente a cada 30 segundos
+      setInterval(loadParkingData, 30000);
+    });
+    
+    // Recalcular overlay quando a janela for redimensionada
+    window.addEventListener('resize', () => {
+      const imageEl = document.getElementById('parking-image');
+      if (imageEl && imageEl.style.display !== 'none') {
+        // Aguardar um pouco para a imagem se ajustar
+        setTimeout(() => {
+          // Recarregar dados para recalcular o overlay
+          loadParkingData();
+        }, 100);
+      }
+    });
+    
+    // Adicionar função para lidar com erros de conectividade
+    window.addEventListener('online', () => {
+      loadParkingData();
+    });
+  </script>
+
+</body>
+</html>
