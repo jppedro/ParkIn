@@ -300,9 +300,9 @@ class ParkingRoutes:
             with tempfile.NamedTemporaryFile(delete=False, suffix='.jpg') as tmp_file:
                 file.save(tmp_file.name)
                 
-                print(f"\n🧪 TESTE DE DETECÇÃO INICIADO")
-                print(f"📁 Arquivo: {file.filename}")
-                print(f"💾 Temp: {tmp_file.name}")
+                print(f"\nTESTE DE DETECÇÃO INICIADO")
+                print(f"Arquivo: {file.filename}")
+                print(f"Temp: {tmp_file.name}")
                 
                 # Testar detecção
                 results = detector.detect_cars_in_image(tmp_file.name)
@@ -318,7 +318,7 @@ class ParkingRoutes:
                 })
                 
         except Exception as e:
-            print(f"❌ ERRO no teste: {str(e)}")
+            print(f"ERRO no teste: {str(e)}")
             return jsonify({'error': f'Erro no teste de detecção: {str(e)}'}), 500
 
 

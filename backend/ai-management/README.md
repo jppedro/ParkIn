@@ -1,6 +1,6 @@
-# 🚗 Sistema ParkIn - API de Gestão de Estacionamento
+# Sistema ParkIn - API de Gestão de Estacionamento
 
-## 🚀 Como Executar
+## Como Executar
 
 ### **Comando Único:**
 ```bash
@@ -19,12 +19,12 @@ source venv/bin/activate
 python main.py
 ```
 
-## 📡 Servidor
+## Servidor
 
 - **URL:** http://localhost:5001
 - **Status:** http://localhost:5001/
 
-## 📤 Upload de Arquivo
+## Upload de Arquivo
 
 ```bash
 # Upload de imagem
@@ -34,7 +34,7 @@ curl -X POST -F "image=@sua_imagem.jpg" http://localhost:5001/upload-video
 curl -X POST -F "video=@seu_video.mp4" http://localhost:5001/upload-video
 ```
 
-## 📊 Consultar Resultados
+## Consultar Resultados
 
 ```bash
 # Informações das vagas (para frontend)
@@ -47,7 +47,7 @@ curl http://localhost:5001/parking-status
 curl http://localhost:5001/debug-last-detection
 ```
 
-## ✨ Melhorias Implementadas
+## Melhorias Implementadas
 
 - **YOLOv8s**: Modelo maior e mais preciso
 - **Threshold 0.25**: Detecta mais objetos (era 0.5)
@@ -55,6 +55,6 @@ curl http://localhost:5001/debug-last-detection
 - **Otimizado para drone**: Parâmetros específicos para imagens aéreas
 - **Até 100 detecções**: Permite mais carros por imagem
 
-## 🎯 Resultado Esperado
+## Resultado Esperado
 
 Agora deve detectar corretamente seus 20+ carros na imagem de drone!

@@ -161,11 +161,11 @@ class ParkingDetector:
             'all_confidences': []
         }
         
-        print(f"\n🔍 DEBUG Frame {frame_number}:")
+        print(f"\nDEBUG Frame {frame_number}:")
         
         if results.boxes is not None and len(results.boxes) > 0:
             debug_info['total_detections'] = len(results.boxes)
-            print(f"   📊 Total de detecções: {len(results.boxes)}")
+            print(f"Total de detecções: {len(results.boxes)}")
             
             for i, box in enumerate(results.boxes):
                 cls_id = int(box.cls[0].cpu().numpy())
@@ -177,12 +177,12 @@ class ParkingDetector:
                 
                 # Log de todas as detecções
                 class_name = self._get_coco_class_name(cls_id)
-                print(f"   🎯 Detecção {i+1}: Classe {cls_id} ({class_name}) - Confiança: {confidence:.3f}")
+                print(f"   Detecção {i+1}: Classe {cls_id} ({class_name}) - Confiança: {confidence:.3f}")
                 
                 # Verificar se é um veículo
                 if cls_id in self.vehicle_classes:
                     debug_info['vehicle_detections'] += 1
-                    print(f"   🚗 É veículo: {self.vehicle_classes[cls_id]}")
+                    print(f"   É veículo: {self.vehicle_classes[cls_id]}")
                     
                     # Só incluir detecções com confiança acima do threshold
                     if confidence > Config.CONFIDENCE_THRESHOLD:
@@ -195,15 +195,15 @@ class ParkingDetector:
                             'frame': frame_number
                         }
                         cars_detected.append(car_info)
-                        print(f"   ✅ ACEITO: Confiança {confidence:.3f} > {Config.CONFIDENCE_THRESHOLD}")
+                        print(f"   ACEITO: Confiança {confidence:.3f} > {Config.CONFIDENCE_THRESHOLD}")
                     else:
-                        print(f"   ❌ REJEITADO: Confiança {confidence:.3f} <= {Config.CONFIDENCE_THRESHOLD}")
+                        print(f"   REJEITADO: Confiança {confidence:.3f} <= {Config.CONFIDENCE_THRESHOLD}")
                 else:
-                    print(f"   ⚪ Não é veículo (classe {cls_id})")
+                    print(f"   Não é veículo (classe {cls_id})")
         else:
-            print(f"   ❌ Nenhuma detecção encontrada")
+            print(f"   Nenhuma detecção encontrada")
         
-        print(f"   📈 RESUMO: {debug_info['confident_detections']} veículos aceitos de {debug_info['total_detections']} detecções")
+        print(f"   RESUMO: {debug_info['confident_detections']} veículos aceitos de {debug_info['total_detections']} detecções")
         
         return {
             'frame': frame_number,

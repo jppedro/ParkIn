@@ -1,6 +1,6 @@
-# 🚗 Sistema ParkIn - Guia de Uso
+# Sistema ParkIn - Guia de Uso
 
-## 📡 Endpoints Disponíveis
+## Endpoints Disponíveis
 
 ### 1. **GET /** - Verificar se o sistema está funcionando
 ```bash
@@ -25,11 +25,11 @@ curl -X POST \
 ```
 
 **O que acontece:**
-1. 📥 Upload do vídeo MP4
-2. 🎯 YOLOv8 detecta carros frame por frame
-3. 📊 Calcula estatísticas de ocupação
-4. 💾 Salva resultados em JSON
-5. 📤 Retorna análise completa
+1. Upload do vídeo MP4
+2. YOLOv8 detecta carros frame por frame
+3. Calcula estatísticas de ocupação
+4. Salva resultados em JSON
+5. Retorna análise completa
 
 **Resposta esperada:**
 ```json
@@ -83,7 +83,7 @@ curl http://localhost:5001/parking-status
 
 ---
 
-## 🔍 Como Funciona a Detecção
+## Como Funciona a Detecção
 
 ### **Processo de Análise:**
 
@@ -133,7 +133,7 @@ curl http://localhost:5001/parking-spots
 
 ---
 
-## 🔧 Integração com Frontend React
+## Integração com Frontend React
 
 No seu frontend React, você pode fazer:
 
