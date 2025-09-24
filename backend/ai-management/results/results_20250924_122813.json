@@ -1,0 +1,23 @@
+{
+  "timestamp": "2025-09-24T12:28:13.792356",
+  "file_type": "image",
+  "image_dimensions": {
+    "width": 626,
+    "height": 417,
+    "area_pixels": 261042
+  },
+  "parking_analysis": {
+    "total_spots": 15,
+    "occupied_spots": 0,
+    "free_spots": 15,
+    "occupancy_rate": 0.0
+  },
+  "car_detections": [],
+  "cars_detected_count": 0,
+  "detection_summary": {
+    "car": 0,
+    "motorcycle": 0,
+    "bus": 0,
+    "truck": 0
+  }
+}
