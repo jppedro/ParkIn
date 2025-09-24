@@ -4,13 +4,13 @@
 
 ### **Comando Único:**
 ```bash
-cd "/Users/joao.rodrigues/Documents/Faculdade/6º Semestre/PI/ParkIn/backend/ai-management" && source venv/bin/activate && python main.py
+cd "/backend/ai-management" && source venv/bin/activate && python main.py
 ```
 
 ### **Passo a Passo:**
 ```bash
 # 1. Navegar para o diretório
-cd "/Users/joao.rodrigues/Documents/Faculdade/6º Semestre/PI/ParkIn/backend/ai-management"
+cd "/backend/ai-management"
 
 # 2. Ativar ambiente virtual
 source venv/bin/activate

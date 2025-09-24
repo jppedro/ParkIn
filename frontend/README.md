@@ -4,13 +4,13 @@
 
 ### **Comando Único:**
 ```bash
-cd "/Users/joao.rodrigues/Documents/Faculdade/6º Semestre/PI/ParkIn/frontend" && python3 -m http.server 8080
+cd "/frontend" && python3 -m http.server 8080
 ```
 
 ### **Passo a Passo:**
 ```bash
 # 1. Navegar para o diretório frontend
-cd "/Users/joao.rodrigues/Documents/Faculdade/6º Semestre/PI/ParkIn/frontend"
+cd "/frontend"
 
 # 2. Iniciar servidor HTTP
 python3 -m http.server 8080
