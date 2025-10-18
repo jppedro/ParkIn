@@ -1,6 +1,0 @@
-train: ./dataset/images/train/
-val: ./dataset/images/val/
-
-nc: 5
-
-names: ['parking_spot', 'car', 'motorcycle', 'bus', 'truck']

@@ -5,7 +5,8 @@ class Config:
     UPLOAD_FOLDER = 'uploads'
     RESULTS_FOLDER = 'results'
     
-    YOLO_MODEL_PATH = 'yolo/runs/detect/yolo_parking_detector/weights/best.pt'
+    # Modelo treinado para detecção aérea (2 classes: enpty, not_enpty)
+    YOLO_MODEL_PATH = 'models/best.pt'
     
     IOU_OCCUPANCY_THRESHOLD = 0.1 # 10% de sobreposição já indica ocupação
 

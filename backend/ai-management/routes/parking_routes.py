@@ -9,7 +9,16 @@ from config import Config
 
 parking_bp = Blueprint('parking', __name__)
 
-detector = ParkingDetector()
+# Inicializar detector com modelo e coordenadas das vagas
+try:
+    detector = ParkingDetector(
+        model_path="models/best.pt",
+        slots_file="parking_slots.json"
+    )
+    print("✅ ParkingDetector inicializado com sucesso!")
+except Exception as e:
+    print(f"⚠️ Erro ao inicializar detector: {e}")
+    detector = None
 
 class ParkingRoutes:
     
@@ -26,7 +35,18 @@ class ParkingRoutes:
     @staticmethod
     @parking_bp.route('/upload-video', methods=['POST'])
     def upload_file():
+        """
+        Endpoint para upload de IMAGEM
+        Detecta carros e calcula ocupação das vagas
+        """
         try:
+            # Verificar se detector foi inicializado
+            if detector is None:
+                return jsonify({
+                    'error': 'Detector não inicializado. Verifique se parking_slots.json existe.'
+                }), 500
+            
+            # Verificar se arquivo foi enviado
             file = None
             file_key = None
             
@@ -44,46 +64,65 @@ class ParkingRoutes:
             if file.filename == '':
                 return jsonify({'error': 'Nenhum arquivo selecionado'}), 400
             
+            # Validar tipo de arquivo (apenas IMAGENS por enquanto)
             filename_lower = file.filename.lower()
-            is_video = filename_lower.endswith(tuple(Config.ALLOWED_VIDEO_EXTENSIONS))
             is_image = filename_lower.endswith(tuple(Config.ALLOWED_IMAGE_EXTENSIONS))
             
-            if not (is_video or is_image):
+            if not is_image:
                 return jsonify({
-                    'error': 'Apenas arquivos de vídeo (.mp4, .avi, .mov, .mkv) ou imagem (.jpg, .jpeg, .png, .bmp) são aceitos'
+                    'error': 'Por enquanto apenas imagens são aceitas (.jpg, .jpeg, .png, .bmp)'
                 }), 400
             
+            # Salvar arquivo
             ext = filename_lower.split('.')[-1]
-            file_type = 'video' if is_video else 'image'
-            filename = f"parking_{file_type}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.{ext}"
-            
+            filename = f"parking_image_{datetime.now().strftime('%Y%m%d_%H%M%S')}.{ext}"
             file_path = os.path.join(Config.UPLOAD_FOLDER, filename)
             file.save(file_path)
             
-            if is_video:
-                results = detector.detect_cars_in_video(file_path)
-                message = 'Vídeo processado com sucesso'
-            else:
-                results = detector.detect_cars_in_image(file_path)
-                message = 'Imagem processada com sucesso'
+            print(f"\n📤 Imagem recebida: {filename}")
             
+            # Processar imagem com novo detector
+            results = detector.detect_cars_in_image(
+                file_path, 
+                save_result=True,  # Salvar imagem com detecções
+                output_path=os.path.join(Config.RESULTS_FOLDER, f"detection_{datetime.now().strftime('%Y%m%d_%H%M%S')}.jpg")
+            )
+            
+            # Salvar resultados em JSON
             results_filename = f"results_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
             results_path = os.path.join(Config.RESULTS_FOLDER, results_filename)
             
             with open(results_path, 'w') as f:
                 json.dump(results, f, indent=2)
             
+            print(f"✅ Resultados salvos em: {results_filename}")
+            
+            # Retornar resposta
             return jsonify({
                 'success': True,
-                'message': message,
-                'file_type': file_type,
+                'message': 'Imagem processada com sucesso',
+                'file_type': 'image',
                 'uploaded_file': filename,
                 'results_file': results_filename,
-                'analysis': results
-            })
+                'analysis': {
+                    'total_slots': results['total_slots'],
+                    'occupied': results['occupied'],
+                    'empty': results['empty'],
+                    'occupancy_rate': results['occupancy_rate'],
+                    'cars_detected': results['cars_detected'],
+                    'timestamp': results['timestamp'],
+                    'slots': results['slots']  # Detalhes de cada vaga
+                }
+            }), 200
             
+        except FileNotFoundError as e:
+            return jsonify({
+                'error': f'Arquivo não encontrado: {str(e)}'
+            }), 404
         except Exception as e:
-            return jsonify({'error': f'Erro ao processar arquivo: {str(e)}'}), 500
+            return jsonify({
+                'error': f'Erro ao processar imagem: {str(e)}'
+            }), 500
 
     @staticmethod
     @parking_bp.route('/parking-status', methods=['GET'])

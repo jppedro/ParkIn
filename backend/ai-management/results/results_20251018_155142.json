@@ -1,0 +1,203 @@
+{
+  "total_slots": 32,
+  "occupied": 31,
+  "empty": 1,
+  "occupancy_rate": 96.9,
+  "slots": [
+    {
+      "id": 1,
+      "status": "occupied",
+      "has_car": true,
+      "overlap": 53.1
+    },
+    {
+      "id": 2,
+      "status": "occupied",
+      "has_car": true,
+      "overlap": 49.0
+    },
+    {
+      "id": 3,
+      "status": "occupied",
+      "has_car": true,
+      "overlap": 40.8
+    },
+    {
+      "id": 4,
+      "status": "empty",
+      "has_car": false,
+      "overlap": 6.1
+    },
+    {
+      "id": 5,
+      "status": "occupied",
+      "has_car": true,
+      "overlap": 38.8
+    },
+    {
+      "id": 6,
+      "status": "occupied",
+      "has_car": true,
+      "overlap": 38.8
+    },
+    {
+      "id": 7,
+      "status": "occupied",
+      "has_car": true,
+      "overlap": 61.2
+    },
+    {
+      "id": 8,
+      "status": "occupied",
+      "has_car": true,
+      "overlap": 65.3
+    },
+    {
+      "id": 9,
+      "status": "occupied",
+      "has_car": true,
+      "overlap": 65.3
+    },
+    {
+      "id": 10,
+      "status": "occupied",
+      "has_car": true,
+      "overlap": 77.6
+    },
+    {
+      "id": 11,
+      "status": "occupied",
+      "has_car": true,
+      "overlap": 81.6
+    },
+    {
+      "id": 12,
+      "status": "occupied",
+      "has_car": true,
+      "overlap": 38.8
+    },
+    {
+      "id": 13,
+      "status": "occupied",
+      "has_car": true,
+      "overlap": 46.9
+    },
+    {
+      "id": 14,
+      "status": "occupied",
+      "has_car": true,
+      "overlap": 38.8
+    },
+    {
+      "id": 15,
+      "status": "occupied",
+      "has_car": true,
+      "overlap": 42.9
+    },
+    {
+      "id": 16,
+      "status": "occupied",
+      "has_car": true,
+      "overlap": 44.9
+    },
+    {
+      "id": 17,
+      "status": "occupied",
+      "has_car": true,
+      "overlap": 44.9
+    },
+    {
+      "id": 18,
+      "status": "occupied",
+      "has_car": true,
+      "overlap": 42.9
+    },
+    {
+      "id": 19,
+      "status": "occupied",
+      "has_car": true,
+      "overlap": 59.2
+    },
+    {
+      "id": 20,
+      "status": "occupied",
+      "has_car": true,
+      "overlap": 40.8
+    },
+    {
+      "id": 21,
+      "status": "occupied",
+      "has_car": true,
+      "overlap": 59.2
+    },
+    {
+      "id": 22,
+      "status": "occupied",
+      "has_car": true,
+      "overlap": 59.2
+    },
+    {
+      "id": 23,
+      "status": "occupied",
+      "has_car": true,
+      "overlap": 63.3
+    },
+    {
+      "id": 24,
+      "status": "occupied",
+      "has_car": true,
+      "overlap": 42.9
+    },
+    {
+      "id": 25,
+      "status": "occupied",
+      "has_car": true,
+      "overlap": 40.8
+    },
+    {
+      "id": 26,
+      "status": "occupied",
+      "has_car": true,
+      "overlap": 36.7
+    },
+    {
+      "id": 27,
+      "status": "occupied",
+      "has_car": true,
+      "overlap": 53.1
+    },
+    {
+      "id": 28,
+      "status": "occupied",
+      "has_car": true,
+      "overlap": 51.0
+    },
+    {
+      "id": 29,
+      "status": "occupied",
+      "has_car": true,
+      "overlap": 40.8
+    },
+    {
+      "id": 30,
+      "status": "occupied",
+      "has_car": true,
+      "overlap": 38.8
+    },
+    {
+      "id": 31,
+      "status": "occupied",
+      "has_car": true,
+      "overlap": 44.9
+    },
+    {
+      "id": 32,
+      "status": "occupied",
+      "has_car": true,
+      "overlap": 44.9
+    }
+  ],
+  "cars_detected": 36,
+  "timestamp": "2025-10-18T15:51:42.769774",
+  "output_image": "results/detection_20251018_155142.jpg"
+}
