@@ -1,381 +1,259 @@
-"""
-Serviço de Detecção de Veículos e Análise de Estacionamento
-"""
-
 from ultralytics import YOLO
 import cv2
+import json
 import numpy as np
+import os
+from pathlib import Path
 from datetime import datetime
-from config import Config
-
 
 class ParkingDetector:
-    """
-    Classe responsável pela detecção de veículos e análise de vagas de estacionamento
-    """
     
-    def __init__(self, model_path=None):
+    def __init__(self, model_path="models/best.pt", slots_file="parking_slots.json"):
         """
-        Inicializa o detector com o modelo YOLO
+        Inicializa o detector
         
         Args:
-            model_path (str): Caminho para o modelo YOLO (opcional, usa config se não fornecido)
+            model_path: Caminho para modelo YOLO (detecta carros)
+            slots_file: Caminho para JSON com coordenadas das vagas
         """
-        if model_path is None:
-            model_path = Config.YOLO_MODEL_PATH
-            
+        # Carregar modelo YOLO
+        if not os.path.exists(model_path):
+            raise FileNotFoundError(f"Modelo não encontrado: {model_path}")
+        
         self.model = YOLO(model_path)
-        self.parking_spots = []
-        self.detection_results = {}
-        self.vehicle_classes = Config.VEHICLE_CLASSES
+        print(f"✅ Modelo YOLO carregado: {model_path}")
+        print(f"   Classes: {self.model.names}")
+        
+        # Carregar coordenadas das vagas
+        if not os.path.exists(slots_file):
+            raise FileNotFoundError(f"Arquivo de vagas não encontrado: {slots_file}")
+        
+        with open(slots_file, 'r') as f:
+            data = json.load(f)
+        
+        self.slots = data['slots']
+        self.total_slots = len(self.slots)
+        print(f"✅ Coordenadas das vagas carregadas: {self.total_slots} vagas")
+        
+        # Configurações
+        self.confidence_threshold = 0.3  # Confiança mínima para detectar carros
+        self.overlap_threshold = 0.3      # 30% de sobreposição para considerar ocupada
     
-    def detect_cars_in_video(self, video_path):
+    def _point_in_polygon(self, point, polygon):
+        """Verifica se um ponto está dentro de um polígono"""
+        x, y = point
+        n = len(polygon)
+        inside = False
+        
+        p1x, p1y = polygon[0]
+        for i in range(n + 1):
+            p2x, p2y = polygon[i % n]
+            if y > min(p1y, p2y):
+                if y <= max(p1y, p2y):
+                    if x <= max(p1x, p2x):
+                        if p1y != p2y:
+                            xinters = (y - p1y) * (p2x - p1x) / (p2y - p1y) + p1x
+                        if p1x == p2x or x <= xinters:
+                            inside = not inside
+            p1x, p1y = p2x, p2y
+        
+        return inside
+    
+    def _calculate_overlap_percentage(self, box, polygon):
         """
-        Detecta carros no vídeo e analisa ocupação de vagas
+        Calcula % de sobreposição entre bounding box do carro e polígono da vaga
+        Retorna valor entre 0.0 (sem sobreposição) e 1.0 (100% sobreposto)
+        """
+        x1, y1, x2, y2 = box
+        
+        # Grid de pontos para testar sobreposição (7x7 = 49 pontos)
+        test_points = []
+        for i in range(7):
+            for j in range(7):
+                px = x1 + (x2 - x1) * i / 6
+                py = y1 + (y2 - y1) * j / 6
+                test_points.append((px, py))
+        
+        # Contar quantos pontos estão dentro do polígono
+        points_inside = sum(1 for p in test_points if self._point_in_polygon(p, polygon))
+        
+        # Calcular porcentagem
+        overlap_percentage = points_inside / len(test_points)
+        
+        return overlap_percentage
+    
+    def detect_cars_in_image(self, image_path, save_result=False, output_path=None):
+        """
+        Detecta carros e calcula ocupação das vagas em uma IMAGEM
         
         Args:
-            video_path (str): Caminho para o arquivo de vídeo
-            
+            image_path: Caminho da imagem
+            save_result: Se True, salva imagem com detecções
+            output_path: Caminho para salvar resultado (opcional)
+        
         Returns:
-            dict: Resultados consolidados da análise
+            dict: {
+                'total_slots': int,
+                'occupied': int,
+                'empty': int,
+                'occupancy_rate': float,
+                'slots': [{'id', 'status', 'has_car'}],
+                'cars_detected': int,
+                'timestamp': str
+            }
         """
-        cap = cv2.VideoCapture(video_path)
+        print(f"\n🔍 Processando imagem: {image_path}")
         
-        if not cap.isOpened():
-            raise Exception("Erro ao abrir o vídeo")
-        
-        # Processar alguns frames para análise
-        frame_count = 0
-        total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-        
-        # Analisar frames em intervalos
-        frame_interval = max(1, total_frames // Config.VIDEO_FRAME_ANALYSIS_COUNT)
-        
-        detections_summary = []
-        
-        while cap.isOpened():
-            ret, frame = cap.read()
-            if not ret:
-                break
-                
-            if frame_count % frame_interval == 0:
-                # Executar detecção YOLO com parâmetros otimizados
-                results = self.model(
-                    frame,
-                    imgsz=Config.IMAGE_SIZE,
-                    conf=Config.CONFIDENCE_THRESHOLD,
-                    iou=Config.IOU_THRESHOLD,
-                    max_det=Config.MAX_DETECTIONS,
-                    verbose=False
-                )
-                
-                # Processar resultados
-                frame_detections = self._process_yolo_results(results[0], frame_count)
-                detections_summary.append(frame_detections)
-                
-            frame_count += 1
-        
-        cap.release()
-        
-        # Consolidar resultados
-        consolidated_results = self._consolidate_detections(detections_summary)
-        return consolidated_results
-    
-    def detect_cars_in_image(self, image_path):
-        """
-        Detecta carros em uma única imagem
-        
-        Args:
-            image_path (str): Caminho para o arquivo de imagem
-            
-        Returns:
-            dict: Resultados da análise da imagem
-        """
-        # Carregar a imagem
+        # Carregar imagem
         image = cv2.imread(image_path)
         if image is None:
-            raise Exception("Erro ao carregar a imagem")
+            raise FileNotFoundError(f"Imagem não encontrada: {image_path}")
         
-        # Executar detecção YOLO com parâmetros otimizados para drone
-        results = self.model(
-            image,
-            imgsz=Config.IMAGE_SIZE,
-            conf=Config.CONFIDENCE_THRESHOLD,
-            iou=Config.IOU_THRESHOLD,
-            max_det=Config.MAX_DETECTIONS,
+        img_height, img_width = image.shape[:2]
+        print(f"   Dimensões: {img_width}x{img_height}")
+        
+        # Detectar carros
+        results = self.model.predict(
+            image_path, 
+            conf=self.confidence_threshold, 
             verbose=False
         )
         
-        # Processar resultados
-        image_detections = self._process_yolo_results(results[0], 0)
+        # Extrair bounding boxes dos carros
+        cars = []
+        if len(results[0].boxes) > 0:
+            for box in results[0].boxes:
+                x1, y1, x2, y2 = box.xyxy[0].tolist()
+                conf = box.conf[0].item()
+                cars.append({
+                    'box': (x1, y1, x2, y2),
+                    'confidence': conf
+                })
         
-        # Consolidar para formato similar ao vídeo
-        cars_detected = image_detections['cars']
-        car_count = len(cars_detected)
+        print(f"   Carros detectados: {len(cars)}")
         
-        # Lógica mais realista para estimar vagas
-        height, width = image.shape[:2]
-        image_area = height * width
+        # Verificar ocupação de cada vaga
+        occupied = 0
+        empty = 0
+        slot_status = []
         
-        # Estimar vagas baseado na área da imagem e carros detectados
-        estimated_total_spots = self._estimate_parking_spots(car_count, image_area)
-        occupied_spots = car_count
-        free_spots = max(0, estimated_total_spots - occupied_spots)
-        
-        return {
-            'timestamp': datetime.now().isoformat(),
-            'file_type': 'image',
-            'image_dimensions': {
-                'width': width,
-                'height': height,
-                'area_pixels': image_area
-            },
-            'parking_analysis': {
-                'total_spots': estimated_total_spots,
-                'occupied_spots': occupied_spots,
-                'free_spots': free_spots,
-                'occupancy_rate': round((occupied_spots / estimated_total_spots) * 100, 2)
-            },
-            'car_detections': cars_detected,
-            'cars_detected_count': car_count,
-            'detection_summary': self._get_detection_summary(cars_detected)
-        }
-    
-    def _process_yolo_results(self, results, frame_number):
-        """
-        Processa resultados do YOLO para um frame específico
-        
-        Args:
-            results: Resultados do YOLO
-            frame_number (int): Número do frame
+        for slot in self.slots:
+            slot_id = slot['id']
+            coords = slot['coordinates']
             
-        Returns:
-            dict: Detecções processadas do frame
-        """
-        cars_detected = []
-        debug_info = {
-            'total_detections': 0,
-            'vehicle_detections': 0,
-            'confident_detections': 0,
-            'all_classes_found': [],
-            'all_confidences': []
-        }
-        
-        print(f"\nDEBUG Frame {frame_number}:")
-        
-        if results.boxes is not None and len(results.boxes) > 0:
-            debug_info['total_detections'] = len(results.boxes)
-            print(f"Total de detecções: {len(results.boxes)}")
+            # Verificar se algum carro está nesta vaga
+            has_car = False
+            max_overlap = 0.0
             
-            for i, box in enumerate(results.boxes):
-                cls_id = int(box.cls[0].cpu().numpy())
-                confidence = float(box.conf[0].cpu().numpy())
-                bbox = box.xyxy[0].cpu().numpy()
+            for car in cars:
+                overlap = self._calculate_overlap_percentage(car['box'], coords)
+                if overlap > max_overlap:
+                    max_overlap = overlap
                 
-                debug_info['all_classes_found'].append(cls_id)
-                debug_info['all_confidences'].append(confidence)
-                
-                # Log de todas as detecções
-                class_name = self._get_coco_class_name(cls_id)
-                print(f"   Detecção {i+1}: Classe {cls_id} ({class_name}) - Confiança: {confidence:.3f}")
-                
-                # Verificar se é um veículo
-                if cls_id in self.vehicle_classes:
-                    debug_info['vehicle_detections'] += 1
-                    print(f"   É veículo: {self.vehicle_classes[cls_id]}")
-                    
-                    # Só incluir detecções com confiança acima do threshold
-                    if confidence > Config.CONFIDENCE_THRESHOLD:
-                        debug_info['confident_detections'] += 1
-                        car_info = {
-                            'bbox': [float(x) for x in bbox],  # [x1, y1, x2, y2]
-                            'confidence': confidence,
-                            'class_id': cls_id,
-                            'class_name': self.vehicle_classes[cls_id],
-                            'frame': frame_number
-                        }
-                        cars_detected.append(car_info)
-                        print(f"   ACEITO: Confiança {confidence:.3f} > {Config.CONFIDENCE_THRESHOLD}")
-                    else:
-                        print(f"   REJEITADO: Confiança {confidence:.3f} <= {Config.CONFIDENCE_THRESHOLD}")
-                else:
-                    print(f"   Não é veículo (classe {cls_id})")
-        else:
-            print(f"   Nenhuma detecção encontrada")
-        
-        print(f"   RESUMO: {debug_info['confident_detections']} veículos aceitos de {debug_info['total_detections']} detecções")
-        
-        return {
-            'frame': frame_number,
-            'cars': cars_detected,
-            'car_count': len(cars_detected),
-            'debug_info': debug_info
-        }
-    
-    def _get_coco_class_name(self, class_id):
-        """
-        Retorna o nome da classe COCO baseado no ID
-        """
-        coco_classes = {
-            0: 'person', 1: 'bicycle', 2: 'car', 3: 'motorcycle', 4: 'airplane',
-            5: 'bus', 6: 'train', 7: 'truck', 8: 'boat', 9: 'traffic light',
-            10: 'fire hydrant', 11: 'stop sign', 12: 'parking meter', 13: 'bench',
-            14: 'bird', 15: 'cat', 16: 'dog', 17: 'horse', 18: 'sheep', 19: 'cow',
-            20: 'elephant', 21: 'bear', 22: 'zebra', 23: 'giraffe', 24: 'backpack',
-            25: 'umbrella', 26: 'handbag', 27: 'tie', 28: 'suitcase', 29: 'frisbee',
-            30: 'skis', 31: 'snowboard', 32: 'sports ball', 33: 'kite', 34: 'baseball bat',
-            35: 'baseball glove', 36: 'skateboard', 37: 'surfboard', 38: 'tennis racket',
-            39: 'bottle', 40: 'wine glass', 41: 'cup', 42: 'fork', 43: 'knife',
-            44: 'spoon', 45: 'bowl', 46: 'banana', 47: 'apple', 48: 'sandwich',
-            49: 'orange', 50: 'broccoli', 51: 'carrot', 52: 'hot dog', 53: 'pizza',
-            54: 'donut', 55: 'cake', 56: 'chair', 57: 'couch', 58: 'potted plant',
-            59: 'bed', 60: 'dining table', 61: 'toilet', 62: 'tv', 63: 'laptop',
-            64: 'mouse', 65: 'remote', 66: 'keyboard', 67: 'cell phone', 68: 'microwave',
-            69: 'oven', 70: 'toaster', 71: 'sink', 72: 'refrigerator', 73: 'book',
-            74: 'clock', 75: 'vase', 76: 'scissors', 77: 'teddy bear', 78: 'hair drier',
-            79: 'toothbrush'
-        }
-        return coco_classes.get(class_id, f'unknown_{class_id}')
-    
-    def _consolidate_detections(self, detections_list):
-        """
-        Consolida detecções de múltiplos frames
-        
-        Args:
-            detections_list (list): Lista de detecções por frame
+                if overlap >= self.overlap_threshold:
+                    has_car = True
+                    break
             
-        Returns:
-            dict: Resultados consolidados
-        """
-        if not detections_list:
-            return self._empty_video_result()
+            status = "occupied" if has_car else "empty"
+            
+            if has_car:
+                occupied += 1
+            else:
+                empty += 1
+            
+            slot_status.append({
+                'id': slot_id,
+                'status': status,
+                'has_car': has_car,
+                'overlap': round(max_overlap * 100, 1)  # % de sobreposição máxima
+            })
         
-        total_cars = 0
-        all_detections = []
-        frame_counts = []
+        # Calcular taxa de ocupação
+        occupancy_rate = (occupied / self.total_slots * 100) if self.total_slots > 0 else 0
         
-        for detection in detections_list:
-            car_count = detection['car_count']
-            total_cars += car_count
-            frame_counts.append(car_count)
-            all_detections.extend(detection['cars'])
-        
-        # Calcular estatísticas mais precisas
-        avg_cars_per_frame = total_cars / len(detections_list)
-        max_cars_in_frame = max(frame_counts) if frame_counts else 0
-        min_cars_in_frame = min(frame_counts) if frame_counts else 0
-        
-        # Estimar vagas de forma mais inteligente baseado no padrão do vídeo
-        estimated_total_spots = self._estimate_parking_spots_video(max_cars_in_frame)
-        occupied_spots = int(round(avg_cars_per_frame))
-        free_spots = max(0, estimated_total_spots - occupied_spots)
-        
-        return {
-            'timestamp': datetime.now().isoformat(),
-            'file_type': 'video',
-            'total_frames_analyzed': len(detections_list),
-            'parking_analysis': {
-                'total_spots': estimated_total_spots,
-                'occupied_spots': occupied_spots,
-                'free_spots': free_spots,
-                'occupancy_rate': round((occupied_spots / estimated_total_spots) * 100, 2)
-            },
-            'car_detections': all_detections[:15],  # Primeiras 15 detecções
-            'detection_statistics': {
-                'average_cars_per_frame': round(avg_cars_per_frame, 2),
-                'max_cars_in_frame': max_cars_in_frame,
-                'min_cars_in_frame': min_cars_in_frame,
-                'total_detections': len(all_detections)
-            },
-            'detection_summary': self._get_detection_summary(all_detections)
+        # Preparar resultado
+        result = {
+            'total_slots': self.total_slots,
+            'occupied': occupied,
+            'empty': empty,
+            'occupancy_rate': round(occupancy_rate, 1),
+            'slots': slot_status,
+            'cars_detected': len(cars),
+            'timestamp': datetime.now().isoformat()
         }
-    
-    def _estimate_parking_spots(self, car_count, image_area):
-        """
-        Estima número total de vagas baseado na quantidade de carros e área da imagem
-        Otimizado para imagens de drone de estacionamentos
         
-        Args:
-            car_count (int): Número de carros detectados
-            image_area (int): Área da imagem em pixels
+        print(f"\n📊 Resultado:")
+        print(f"   Total: {self.total_slots} vagas")
+        print(f"   Ocupadas: {occupied} ({occupancy_rate:.1f}%)")
+        print(f"   Vazias: {empty}")
+        
+        # Salvar imagem com detecções (opcional)
+        if save_result:
+            output_image = self._draw_detections(image, cars, slot_status)
             
-        Returns:
-            int: Número estimado de vagas
-        """
-        if car_count == 0:
-            return 15  # Padrão mais realista para estacionamento vazio
-        elif car_count <= 3:
-            return car_count + 5  # Pequeno estacionamento
-        elif car_count <= 10:
-            return int(car_count * 1.5)  # Pequeno/médio estacionamento
-        elif car_count <= 25:
-            return int(car_count * 1.3)  # Médio estacionamento  
-        elif car_count <= 50:
-            return int(car_count * 1.2)  # Grande estacionamento
-        else:
-            return int(car_count * 1.1)  # Estacionamento muito grande
-    
-    def _estimate_parking_spots_video(self, max_cars):
-        """
-        Estima número total de vagas para vídeo baseado no máximo de carros
-        
-        Args:
-            max_cars (int): Máximo de carros detectados em um frame
+            if output_path is None:
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                output_path = f"results/detection_{timestamp}.jpg"
             
-        Returns:
-            int: Número estimado de vagas
-        """
-        if max_cars == 0:
-            return 15  # Padrão para estacionamento vazio
-        elif max_cars <= 5:
-            return max_cars + 5  # Pequeno estacionamento
-        elif max_cars <= 20:
-            return int(max_cars * 1.3)  # Médio estacionamento
-        else:
-            return int(max_cars * 1.15)  # Grande estacionamento
-    
-    def _get_detection_summary(self, detections):
-        """
-        Cria resumo das detecções por tipo de veículo
-        
-        Args:
-            detections (list): Lista de detecções
+            # Criar diretório se não existir
+            os.makedirs(os.path.dirname(output_path), exist_ok=True)
             
-        Returns:
-            dict: Resumo por tipo de veículo
-        """
-        summary = {vehicle_type: 0 for vehicle_type in self.vehicle_classes.values()}
+            cv2.imwrite(output_path, output_image)
+            result['output_image'] = output_path
+            print(f"   Imagem salva: {output_path}")
         
-        for detection in detections:
-            vehicle_type = detection.get('class_name', 'unknown')
-            if vehicle_type in summary:
-                summary[vehicle_type] += 1
-        
-        return summary
+        return result
     
-    def _empty_video_result(self):
+    def _draw_detections(self, image, cars, slot_status):
+        """Desenha detecções na imagem"""
+        output = image.copy()
+        
+        # Desenhar carros detectados (azul)
+        for car in cars:
+            x1, y1, x2, y2 = car['box']
+            cv2.rectangle(output, (int(x1), int(y1)), (int(x2), int(y2)), 
+                         (255, 0, 0), 2)
+            cv2.putText(output, f"{car['confidence']:.2f}", 
+                       (int(x1), int(y1)-5), cv2.FONT_HERSHEY_SIMPLEX, 
+                       0.5, (255, 0, 0), 2)
+        
+        # Desenhar vagas
+        for i, slot in enumerate(self.slots):
+            coords = np.array(slot['coordinates'])
+            has_car = slot_status[i]['has_car']
+            
+            # Cor: verde (vazia) ou vermelho (ocupada)
+            color = (0, 0, 255) if has_car else (0, 255, 0)
+            
+            # Desenhar polígono preenchido (transparente)
+            overlay = output.copy()
+            cv2.fillPoly(overlay, [coords], color)
+            cv2.addWeighted(overlay, 0.3, output, 0.7, 0, output)
+            
+            # Contorno do polígono
+            cv2.polylines(output, [coords], True, color, 2)
+            
+            # ID da vaga no centro
+            center_x = int(sum(p[0] for p in slot['coordinates']) / 4)
+            center_y = int(sum(p[1] for p in slot['coordinates']) / 4)
+            cv2.putText(output, f"#{slot['id']}", (center_x-15, center_y), 
+                       cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+        
+        # Adicionar legenda
+        occupied_count = sum(1 for s in slot_status if s['has_car'])
+        empty_count = len(slot_status) - occupied_count
+        
+        cv2.putText(output, f"Ocupadas: {occupied_count} | Vazias: {empty_count}", 
+                   (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+        
+        return output
+    
+    def get_parking_status(self, image_path):
         """
-        Retorna resultado vazio para vídeo sem detecções
+        Método simplificado para obter status das vagas
+        (Compatível com API existente)
         
         Returns:
-            dict: Resultado vazio
+            dict: Status das vagas
         """
-        return {
-            'timestamp': datetime.now().isoformat(),
-            'file_type': 'video',
-            'total_frames_analyzed': 0,
-            'parking_analysis': {
-                'total_spots': 0,
-                'occupied_spots': 0,
-                'free_spots': 0,
-                'occupancy_rate': 0
-            },
-            'car_detections': [],
-            'detection_statistics': {
-                'average_cars_per_frame': 0,
-                'max_cars_in_frame': 0,
-                'min_cars_in_frame': 0,
-                'total_detections': 0
-            },
-            'detection_summary': {vehicle_type: 0 for vehicle_type in self.vehicle_classes.values()}
-        }
+        return self.detect_cars_in_image(image_path, save_result=True)

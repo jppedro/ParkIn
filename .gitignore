@@ -1,0 +1,52 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.pyc
+
+# Virtual Environment
+venv/
+env/
+ENV/
+.venv
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Uploads e resultados temporários
+backend/ai-management/uploads/*.jpg
+backend/ai-management/uploads/*.png
+backend/ai-management/uploads/*.jpeg
+backend/ai-management/results/*.jpg
+backend/ai-management/results/*.json
+
+# Mantém apenas os arquivos essenciais
+!backend/ai-management/uploads/.gitkeep
+!backend/ai-management/results/.gitkeep
+
+# Modelos grandes (opcional - descomentar se não quiser versionar)
+# backend/ai-management/models/*.pt
+
+# Arquivos de configuração locais
+.env
+.env.local
+
+# Node modules (se usar no frontend)
+node_modules/
+
+# Docker
+*.log

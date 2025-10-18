@@ -1,14 +1,15 @@
 import os
 
-
 class Config:
     
     UPLOAD_FOLDER = 'uploads'
     RESULTS_FOLDER = 'results'
     
-    YOLO_MODEL_PATH = 'yolov8s.pt'
-    CONFIDENCE_THRESHOLD = 0.1
+    # Modelo treinado para detecção aérea (2 classes: enpty, not_enpty)
+    YOLO_MODEL_PATH = 'models/best.pt'
     
+    IOU_OCCUPANCY_THRESHOLD = 0.1 # 10% de sobreposição já indica ocupação
+
     HOST = '0.0.0.0'
     PORT = 5001
     DEBUG = True
@@ -17,24 +18,8 @@ class Config:
     ALLOWED_IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.bmp']
     
     VIDEO_FRAME_ANALYSIS_COUNT = 10  
-    
-    # Configurações de detecção otimizadas para drone
-    IMAGE_SIZE = 1280              # Tamanho maior para melhor detecção
-    IOU_THRESHOLD = 0.3            # Non-Maximum Suppression mais permissivo
-    MAX_DETECTIONS = 300           # Máximo de detecções por imagem
-    
-    # Classes de veículos COCO
-    VEHICLE_CLASSES = {
-        2: 'car',
-        3: 'motorcycle', 
-        5: 'bus',
-        7: 'truck'
-    }
-    
+
     @classmethod
     def init_folders(cls):
-        """
-        Cria as pastas necessárias se não existirem
-        """
         os.makedirs(cls.UPLOAD_FOLDER, exist_ok=True)
         os.makedirs(cls.RESULTS_FOLDER, exist_ok=True)
