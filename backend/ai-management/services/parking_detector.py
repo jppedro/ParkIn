@@ -33,7 +33,7 @@ class ParkingDetector:
         
         self.slots = data['slots']
         self.total_slots = len(self.slots)
-        print(f"✅ Coordenadas das vagas carregadas: {self.total_slots} vagas")
+        print(f"Coordenadas das vagas carregadas: {self.total_slots} vagas")
         
         # Configurações
         self.confidence_threshold = 0.3  # Confiança mínima para detectar carros

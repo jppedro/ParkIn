@@ -34,6 +34,9 @@ backend/ai-management/uploads/*.jpeg
 backend/ai-management/results/*.jpg
 backend/ai-management/results/*.json
 
+# Multi-parking data (imagens de referência, slots, histórico)
+backend/ai-management/parking_data/
+
 # Mantém apenas os arquivos essenciais
 !backend/ai-management/uploads/.gitkeep
 !backend/ai-management/results/.gitkeep
