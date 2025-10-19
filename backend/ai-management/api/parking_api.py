@@ -19,8 +19,20 @@ class ParkingAPI:
         Config.init_folders()
             
     def _register_routes(self):
-        from routes.parking_routes import register_routes
-        register_routes(self.app)
+        # Health check endpoint
+        @self.app.route('/', methods=['GET'])
+        def health_check():
+            from flask import jsonify
+            from datetime import datetime
+            return jsonify({
+                'status': 'Sistema ParkIn Online',
+                'timestamp': datetime.now().isoformat(),
+                'version': '2.0.0 - Multi-Parking API'
+            })
+        
+        # Registrar rotas multi-parking
+        from routes.multi_parking_routes import multi_parking_bp
+        self.app.register_blueprint(multi_parking_bp, url_prefix='/api/parking')
         
     def run(self, host=None, port=None, debug=None):
         if host is None:
@@ -35,16 +47,21 @@ class ParkingAPI:
         
     def _print_startup_info(self, host, port):
         print("Sistema ParkIn - Gestão Inteligente de Estacionamento")
-        print("=" * 60)
+        print("=" * 80)
         print(f"Servidor iniciando em {host}:{port}...")
-        print("Endpoints disponíveis:")
-        print("   GET  /                     - Status do sistema")
-        print("   POST /upload-video         - Upload e análise (vídeo/imagem)")
-        print("   GET  /parking-status       - Status completo das vagas")
-        print("   GET  /parking-spots        - Informações das vagas (para frontend)")
-        print("   GET  /debug-last-detection - Debug da última detecção")
-        print("   POST /test-detection       - Teste de detecção com logs detalhados")
-        print("=" * 60)
+        print("\n🏥 HEALTH CHECK:")
+        print("   GET    /                          - Status do sistema")
+        print("\n🚗 ENDPOINTS MULTI-PARKING API:")
+        print("   POST   /api/parking/setup         - Criar nova área de estacionamento")
+        print("   POST   /api/parking/define-slots  - Definir vagas de uma área (via JSON)")
+        print("   POST   /api/parking/detect        - Detectar ocupação em uma área")
+        print("   GET    /api/parking/status        - Status de uma área específica")
+        print("   GET    /api/parking/list          - Listar todas as áreas")
+        print("   DELETE /api/parking/delete        - Remover uma área")
+        print("   GET    /api/parking/image/<id>    - Imagem de referência de uma área")
+        print("\n💡 SCRIPTS CLI:")
+        print("   python3 define_slots_for_parking.py <parking_id>  - Desenhar vagas manualmente")
+        print("=" * 80)
         
     def get_app(self):
         return self.app

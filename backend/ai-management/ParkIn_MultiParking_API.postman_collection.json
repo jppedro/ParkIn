@@ -1,0 +1,294 @@
+{
+	"info": {
+		"_postman_id": "parkin-multi-parking-api-2024",
+		"name": "ParkIn - Multi-Parking API",
+		"description": "Collection completa para testar a API Multi-Parking do sistema ParkIn.\n\n## Workflow:\n1. **Setup** - Criar nova área de estacionamento\n2. **Define Slots** - Definir vagas via CLI (`python3 define_slots_for_parking.py <parking_id>`)\n3. **Detect** - Detectar ocupação das vagas\n4. **Status** - Consultar status atual\n5. **List** - Listar todas as áreas\n6. **Delete** - Remover área\n\n## Variáveis:\n- `base_url`: http://localhost:5001\n- `parking_id`: UUID da área criada (preenchido automaticamente após setup)\n\n## Scripts CLI:\n- `define_slots_for_parking.py <parking_id>` - Desenhar vagas manualmente\n- `list_parking_areas.py` - Listar áreas cadastradas",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Health Check",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						""
+					]
+				},
+				"description": "Verifica se o sistema está online"
+			},
+			"response": []
+		},
+		{
+			"name": "1. Setup - Criar Área de Estacionamento",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Salvar parking_id como variável de ambiente",
+							"if (pm.response.code === 201) {",
+							"    var jsonData = pm.response.json();",
+							"    pm.environment.set(\"parking_id\", jsonData.parking_id);",
+							"    console.log(\"Parking ID salvo: \" + jsonData.parking_id);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "name",
+							"value": "Fragmento A",
+							"description": "Nome da área de estacionamento",
+							"type": "text"
+						},
+						{
+							"key": "description",
+							"value": "Zona Norte do Estacionamento",
+							"description": "Descrição opcional",
+							"type": "text"
+						},
+						{
+							"key": "reference_image",
+							"description": "Imagem de referência do fragmento (arquivo .jpg, .png, .jpeg, .bmp)",
+							"type": "file",
+							"src": []
+						}
+					]
+				},
+				"url": {
+					"raw": "{{base_url}}/api/parking/setup",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"parking",
+						"setup"
+					]
+				},
+				"description": "Cria uma nova área de estacionamento e faz upload da imagem de referência.\n\n**Importante:** Após criar, o `parking_id` será salvo automaticamente como variável de ambiente."
+			},
+			"response": []
+		},
+		{
+			"name": "2. Define Slots - Definir Vagas (API)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"parking_id\": \"{{parking_id}}\",\n  \"slots\": [\n    {\n      \"id\": 1,\n      \"coordinates\": [[100, 100], [200, 100], [200, 200], [100, 200]]\n    },\n    {\n      \"id\": 2,\n      \"coordinates\": [[220, 100], [320, 100], [320, 200], [220, 200]]\n    },\n    {\n      \"id\": 3,\n      \"coordinates\": [[340, 100], [440, 100], [440, 200], [340, 200]]\n    },\n    {\n      \"id\": 4,\n      \"coordinates\": [[100, 220], [200, 220], [200, 320], [100, 320]]\n    },\n    {\n      \"id\": 5,\n      \"coordinates\": [[220, 220], [320, 220], [320, 320], [220, 320]]\n    }\n  ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/parking/define-slots",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"parking",
+						"define-slots"
+					]
+				},
+				"description": "Define as coordenadas das vagas para uma área.\n\n**Opção alternativa:** Use o script CLI:\n```bash\npython3 define_slots_for_parking.py {{parking_id}}\n```\n\nCada vaga deve ter:\n- `id`: número da vaga\n- `coordinates`: array de pontos [[x1,y1], [x2,y2], [x3,y3], [x4,y4]]\n\n**Nova funcionalidade:** Salva imagem marcada em `uploads/parking_slots_{{parking_id}}_*.jpg`"
+			},
+			"response": []
+		},
+		{
+			"name": "3. Detect - Detectar Ocupação",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "parking_id",
+							"value": "{{parking_id}}",
+							"description": "UUID da área de estacionamento",
+							"type": "text"
+						},
+						{
+							"key": "image",
+							"description": "Imagem atual para análise de ocupação",
+							"type": "file",
+							"src": []
+						}
+					]
+				},
+				"url": {
+					"raw": "{{base_url}}/api/parking/detect",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"parking",
+						"detect"
+					]
+				},
+				"description": "Detecta a ocupação das vagas em uma área específica.\n\nRetorna:\n- Total de vagas\n- Vagas ocupadas\n- Vagas vazias\n- Taxa de ocupação\n- Lista detalhada de cada vaga\n- Caminho da imagem anotada\n\nA imagem anotada é salva em `parking_data/{{parking_id}}/results/`"
+			},
+			"response": []
+		},
+		{
+			"name": "4. Status - Consultar Status",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/parking/status?parking_id={{parking_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"parking",
+						"status"
+					],
+					"query": [
+						{
+							"key": "parking_id",
+							"value": "{{parking_id}}",
+							"description": "UUID da área de estacionamento"
+						}
+					]
+				},
+				"description": "Retorna o status atual de uma área, incluindo:\n- Metadados da área\n- Total de vagas\n- Última detecção realizada (se houver)"
+			},
+			"response": []
+		},
+		{
+			"name": "5. List - Listar Áreas",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/parking/list",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"parking",
+						"list"
+					]
+				},
+				"description": "Lista todas as áreas de estacionamento cadastradas.\n\nRetorna array com:\n- parking_id\n- name\n- description\n- created_at\n- slots_defined\n- total_slots"
+			},
+			"response": []
+		},
+		{
+			"name": "6. Image - Obter Imagem de Referência",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/parking/image/{{parking_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"parking",
+						"image",
+						"{{parking_id}}"
+					]
+				},
+				"description": "Retorna a imagem de referência de uma área específica.\n\nA imagem é retornada diretamente como arquivo."
+			},
+			"response": []
+		},
+		{
+			"name": "7. Delete - Remover Área",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"parking_id\": \"{{parking_id}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/parking/delete",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"parking",
+						"delete"
+					]
+				},
+				"description": "Remove completamente uma área de estacionamento.\n\n**Atenção:** Esta ação é irreversível e remove:\n- Metadados\n- Imagem de referência\n- Coordenadas das vagas\n- Histórico de detecções"
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:5001",
+			"type": "string"
+		},
+		{
+			"key": "parking_id",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
