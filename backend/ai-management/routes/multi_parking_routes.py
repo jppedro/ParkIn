@@ -421,7 +421,10 @@ class MultiParkingRoutes:
         """
         GET /api/parking/image/<parking_id>
         
-        Retorna a imagem de referência de uma área
+        Retorna a imagem de referência ou a última detecção de uma área
+        
+        Query Params:
+        - type: 'reference' (padrão) ou 'detection'
         """
         try:
             metadata = parking_manager.get_parking_metadata(parking_id)
@@ -429,12 +432,41 @@ class MultiParkingRoutes:
             if not metadata:
                 return jsonify({'error': 'Área não encontrada'}), 404
             
-            reference_image = metadata.get('reference_image')
+            # Obter tipo de imagem solicitado
+            image_type = request.args.get('type', 'reference')
             
-            if not reference_image or not os.path.exists(reference_image):
-                return jsonify({'error': 'Imagem de referência não encontrada'}), 404
+            if image_type == 'detection':
+                # Buscar última imagem de detecção
+                results_folder = os.path.join(
+                    parking_manager.data_folder,
+                    parking_id,
+                    'results'
+                )
+                
+                if not os.path.exists(results_folder):
+                    return jsonify({'error': 'Nenhuma detecção disponível'}), 404
+                
+                # Listar arquivos de detecção (ordenar por data)
+                detection_files = [
+                    f for f in os.listdir(results_folder)
+                    if f.startswith('detection_') and f.endswith(('.jpg', '.jpeg', '.png'))
+                ]
+                
+                if not detection_files:
+                    return jsonify({'error': 'Nenhuma imagem de detecção disponível'}), 404
+                
+                # Pegar a mais recente
+                detection_files.sort(reverse=True)
+                image_path = os.path.join(results_folder, detection_files[0])
+                
+            else:
+                # Imagem de referência
+                image_path = metadata.get('reference_image')
+                
+                if not image_path or not os.path.exists(image_path):
+                    return jsonify({'error': 'Imagem de referência não encontrada'}), 404
             
-            return send_file(reference_image, mimetype='image/jpeg')
+            return send_file(image_path, mimetype='image/jpeg')
         
         except Exception as e:
             return jsonify({'error': str(e)}), 500

@@ -403,9 +403,7 @@ curl -X POST http://localhost:5001/api/parking/setup \
 2. ✅ Script CLI para definir vagas (`define_slots_for_parking.py`)
 3. ✅ Script CLI para listar áreas (`list_parking_areas.py`)
 4. ✅ Endpoints legacy removidos - apenas Multi-Parking API
-5. ✅ Caminhos absolutos (sem problemas de `cwd`)
-6. ✅ Collection do Postman atualizada
-7. ⏳ Integração com dashboard frontend
-8. ⏳ Processamento de vídeo frame-by-frame
-9. ⏳ WebSocket para updates em tempo real
-10. ⏳ Sistema de autenticação/permissões
+5. ⏳ Integração com dashboard frontend
+6. ⏳ Processamento de vídeo frame-by-frame
+7. ⏳ WebSocket para updates em tempo real
+8. ⏳ Sistema de autenticação/permissões
