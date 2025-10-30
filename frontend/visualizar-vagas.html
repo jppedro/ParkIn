@@ -16,15 +16,15 @@
 
   <div class="parking-container">
     <h1 class="parking-title">Status do Estacionamento</h1>
-    
+
     <div id="loading" class="loading">
       Carregando informações das vagas...
     </div>
-    
+
     <div id="error" class="error" style="display: none;">
       Erro ao carregar dados. Verifique se o backend está rodando.
     </div>
-    
+
     <div id="parking-content" style="display: none;">
       <div class="parking-info">
         <div class="info-card">
@@ -44,18 +44,18 @@
           <p>Taxa de Ocupação</p>
         </div>
       </div>
-      
+
       <div id="parking-image-container" class="parking-image-container">
         <img id="parking-image" class="parking-image" src="" alt="Imagem do Estacionamento" style="display: none;">
         <div id="parking-overlay" class="parking-overlay">
           <!-- Vagas serão sobrepostas aqui -->
         </div>
       </div>
-      
-      <div id="parking-grid" class="parking-grid" style="display: none;">
+
+        <div id="parking-layout-container" class="parking-layout-container" style="display: none;">
         <!-- Grid alternativo caso não haja imagem -->
       </div>
-      
+
       <div class="legend">
         <div class="legend-item">
           <div class="legend-color free"></div>
@@ -70,11 +70,11 @@
           <span style="color: #fff;">Status Desconhecido</span>
         </div>
       </div>
-      
+
       <button class="refresh-btn" onclick="loadParkingData()">
         Atualizar Status
       </button>
-      
+
       <div id="last-updated" class="last-updated">
         <!-- Última atualização será mostrada aqui -->
       </div>
@@ -86,145 +86,127 @@
   </footer>
 
   <script>
-    const API_BASE_URL = 'http://localhost:5001';
-    
-    // Obter parking_id da URL
-    function getParkingIdFromURL() {
-      const urlParams = new URLSearchParams(window.location.search);
-      return urlParams.get('parking_id') || localStorage.getItem('current_parking_id');
-    }
-    
-    // Função para carregar dados do estacionamento
-    async function loadParkingData() {
-      const loadingEl = document.getElementById('loading');
-      const errorEl = document.getElementById('error');
-      const contentEl = document.getElementById('parking-content');
-      
-      loadingEl.style.display = 'block';
-      errorEl.style.display = 'none';
-      contentEl.style.display = 'none';
-      
-      // Obter parking_id
-      const parkingId = getParkingIdFromURL();
-      
-      console.log('Parking ID:', parkingId);
-      
-      if (!parkingId) {
-        showError('ID do estacionamento não encontrado. Volte e selecione uma área.');
-        return;
+      const API_BASE_URL = 'http://localhost:5001';
+
+      function getParkingIdFromURL() {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get('parking_id') || localStorage.getItem('current_parking_id');
       }
-      
-      try {
-        // Carregar dados das vagas do parking específico
-        const apiUrl = `${API_BASE_URL}/api/parking/status?parking_id=${parkingId}`;
-        console.log('Fazendo request para:', apiUrl);
-        
-        const response = await fetch(apiUrl);
-        
-        console.log('Response status:', response.status);
-        
-        if (!response.ok) {
-          throw new Error(`Erro HTTP: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        console.log('Dados recebidos:', data);
-        
-        if (!data.success) {
-          throw new Error(data.message || 'Erro ao carregar dados do estacionamento');
-        }
-        
-        // Atualizar informações gerais
-        const lastDetection = data.last_detection;
-        
-        if (lastDetection) {
-          document.getElementById('total-spots').textContent = lastDetection.total_slots || 0;
-          document.getElementById('free-spots').textContent = lastDetection.empty || 0;
-          document.getElementById('occupied-spots').textContent = lastDetection.occupied || 0;
-          document.getElementById('occupancy-rate').textContent = 
-            lastDetection.occupancy_rate ? `${Math.round(lastDetection.occupancy_rate)}%` : '0%';
-          
-          // Atualizar timestamp
-          if (lastDetection.timestamp) {
-            const date = new Date(lastDetection.timestamp);
-            document.getElementById('last-updated').textContent = 
-              `Última atualização: ${date.toLocaleString('pt-BR')}`;
+
+      async function loadParkingData() {
+        const loadingEl = document.getElementById('loading');
+        const errorEl = document.getElementById('error');
+        const contentEl = document.getElementById('parking-content');
+
+        document.getElementById('parking-image-container').style.display = 'none';
+        document.getElementById('parking-layout-container').style.display = 'none';
+
+        loadingEl.style.display = 'block';
+        errorEl.style.display = 'none';
+        contentEl.style.display = 'none';
+
+        const parkingId = getParkingIdFromURL();
+
+        try {
+          const apiUrl = `${API_BASE_URL}/api/parking/status?parking_id=${parkingId}`;
+          const response = await fetch(apiUrl);
+          if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
+
+          const data = await response.json();
+          console.log('Dados recebidos (com layout DINÂMICO):', data);
+
+          if (!data.success) throw new Error(data.message || 'Erro ao carregar dados');
+
+          const lastDetection = data.last_detection;
+
+          const layoutGroups = data.layout_groups;
+
+          if (lastDetection) {
+            document.getElementById('total-spots').textContent = lastDetection.total_slots || 0;
+            document.getElementById('free-spots').textContent = lastDetection.empty || 0;
+            document.getElementById('occupied-spots').textContent = lastDetection.occupied || 0;
+            document.getElementById('occupancy-rate').textContent =
+              lastDetection.occupancy_rate ? `${Math.round(lastDetection.occupancy_rate)}%` : '0%';
+
+            if (lastDetection.timestamp) {
+              const date = new Date(lastDetection.timestamp);
+              document.getElementById('last-updated').textContent =
+                `Última atualização: ${date.toLocaleString('pt-BR')}`;
+            }
+
+            if (layoutGroups && layoutGroups.length > 0) {
+              console.log(`Usando layout dinâmico de ${layoutGroups.length} fileiras.`);
+              renderSlotLayout(layoutGroups);
+              document.getElementById('parking-layout-container').style.display = 'flex';
+            } else {
+              console.warn("Backend não enviou layout. Usando grid automático (fallback).");
+              renderSlotGridFallback(lastDetection.slots);
+              document.getElementById('parking-layout-container').style.display = 'grid';
+            }
+
+          } else {
+            throw new Error('Nenhuma detecção disponível para esta área. Execute uma detecção primeiro.');
           }
-          
-          // Carregar imagem anotada
-          await loadParkingImage(lastDetection.output_image, parkingId);
-        } else {
-          throw new Error('Nenhuma detecção disponível para esta área. Execute uma detecção primeiro.');
+
+          loadingEl.style.display = 'none';
+          contentEl.style.display = 'block';
+
+        } catch (error) {
+          console.error('Erro ao carregar dados:', error);
+          showError(error.message);
         }
-        
-        // Mostrar conteúdo
-        loadingEl.style.display = 'none';
-        contentEl.style.display = 'block';
-        
-      } catch (error) {
-        console.error('Erro ao carregar dados:', error);
-        showError(error.message);
       }
-    }
-    
-    // Função para exibir erro
-    function showError(message) {
-      const loadingEl = document.getElementById('loading');
-      const errorEl = document.getElementById('error');
-      
-      loadingEl.style.display = 'none';
-      errorEl.style.display = 'block';
-      errorEl.textContent = `⚠️ ${message}`;
-    }
 
-    // Função para carregar a imagem do estacionamento
-    async function loadParkingImage(imagePath, parkingId) {
-      const imageEl = document.getElementById('parking-image');
-      const imageContainerEl = document.getElementById('parking-image-container');
-      
-      console.log('Carregando imagem. Path:', imagePath, 'Parking ID:', parkingId);
-      
-      if (!imagePath) {
-        imageContainerEl.style.display = 'none';
-        return;
-      }
-      
-      try {
-        // Usar endpoint da API para servir a imagem
-        const imageUrl = `${API_BASE_URL}/api/parking/image/${parkingId}?type=detection&timestamp=${Date.now()}`;
-        console.log('URL da imagem:', imageUrl);
-        
-        return new Promise((resolve, reject) => {
-          imageEl.onload = () => {
-            console.log('Imagem carregada com sucesso!');
-            imageEl.style.display = 'block';
-            imageContainerEl.style.display = 'block';
-            resolve();
-          };
-          
-          imageEl.onerror = () => {
-            console.error('Erro ao carregar imagem');
-            imageContainerEl.style.display = 'none';
-            reject(new Error('Imagem não encontrada'));
-          };
-          
-          imageEl.src = imageUrl;
+      function renderSlotLayout(layoutGroups) {
+        const layoutContainer = document.getElementById('parking-layout-container');
+        layoutContainer.innerHTML = '';
+
+        if (!layoutGroups) return;
+
+        layoutGroups.forEach(aisle => {
+          const aisleDiv = document.createElement('div');
+          aisleDiv.className = 'parking-aisle';
+
+          aisle.forEach(slot => {
+            const box = document.createElement('div');
+            box.className = 'parking-spot';
+
+            const statusClass = slot.status === 'occupied' ? 'occupied' : 'free';
+            box.classList.add(statusClass);
+            box.textContent = slot.id;
+
+            aisleDiv.appendChild(box);
+          });
+          layoutContainer.appendChild(aisleDiv);
         });
-        
-      } catch (error) {
-        console.error('Erro ao carregar imagem:', error.message);
-        imageContainerEl.style.display = 'none';
       }
-    }
 
+      function renderSlotGridFallback(slots) {
+        const grid = document.getElementById('parking-layout-container');
+        grid.innerHTML = '';
+        if (!slots) return;
+        slots.forEach(slot => {
+          const box = document.createElement('div');
+          box.className = 'parking-spot';
+          const statusClass = slot.status === 'occupied' ? 'occupied' : 'free';
+          box.classList.add(statusClass);
+          box.textContent = slot.id;
+          grid.appendChild(box);
+        });
+      }
 
-    // Carregar dados quando a página carregar
-    document.addEventListener('DOMContentLoaded', () => {
-      loadParkingData();
-      
-      // Atualizar automaticamente a cada 30 segundos
-      setInterval(loadParkingData, 30000);
-    });
+      function showError(message) {
+        const loadingEl = document.getElementById('loading');
+        const errorEl = document.getElementById('error');
+        loadingEl.style.display = 'none';
+        errorEl.style.display = 'block';
+        errorEl.textContent = `⚠️ ${message}`;
+      }
+
+      document.addEventListener('DOMContentLoaded', () => {
+        loadParkingData();
+        setInterval(loadParkingData, 30000);
+      });
   </script>
 
 </body>

@@ -222,7 +222,24 @@
   margin-top: 15px;
 }
 
-/* Responsividade para dispositivos móveis */
+.parking-layout-container {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  padding: 20px;
+  background-color: #333;
+  border-radius: 8px;
+  max-width: fit-content;
+  margin: 0 auto;
+  flex-wrap: wrap;
+}
+
+.parking-aisle {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 @media (max-width: 768px) {
   .parking-container {
     margin: 10px;
