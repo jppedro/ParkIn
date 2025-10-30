@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin - ParkIn</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div class="header estacionamento-header">
+    <button class="voltar" onclick="logout()">← Logout</button>
+    <h2>Área do Segurança</h2>
+    <img src="imagem/puc.png" alt="Logo PUC" class="logo-header" />
+  </div>
+
+  <div class="admin-container">
+    <h1>Selecione uma Região</h1>
+
+    <div class="admin-grid">
+      <div class="card" onclick="abrirRegiao('H1')"><p>Setor Bolsão C</p></div>
+      <div class="card" onclick="abrirRegiao('H2')"><p>Setor H2</p></div>
+      <div class="card" onclick="abrirRegiao('H3')"><p>Setor MESCLA</p></div>
+      <div class="card" onclick="abrirRegiao('H4')"><p>Setor H15</p></div>
+    </div>
+  </div>
+
+  <footer class="rodape">
+  </footer>
+
+  <script src="admin.js"></script>
+</body>
+</html>
