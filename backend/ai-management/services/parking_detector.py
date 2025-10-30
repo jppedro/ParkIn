@@ -165,7 +165,8 @@ class ParkingDetector:
                 'id': slot_id,
                 'status': status,
                 'has_car': has_car,
-                'overlap': round(max_overlap * 100, 1)  # % de sobreposição máxima
+                'overlap': round(max_overlap * 100, 1),
+                'coordinates': coords
             })
         
         # Calcular taxa de ocupação
