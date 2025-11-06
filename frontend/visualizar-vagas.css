@@ -19,7 +19,7 @@
   display: flex;
   justify-content: space-around;
   margin-bottom: 30px;
-  flex-wrap: wrap;
+  flex-wrap: wrap; 
   gap: 15px;
 }
 
@@ -315,4 +315,57 @@
     align-items: center;
     gap: 15px;
   }
+}
+
+.direction-indicator {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    margin: 15px auto;
+    color: #fff; /* Texto branco */
+    font-weight: bold;
+    font-size: 1.1em;
+    text-align: center;
+}
+
+.direction-indicator p {
+    margin: 0 10px; /* Espaçamento entre texto e seta */
+    padding: 5px;
+    border-radius: 4px;
+    background-color: rgba(0, 0, 0, 0.4); /* Fundo sutil */
+}
+
+/* Estilo para as setas (símbolo Unicode) */
+.arrow-up, .arrow-down {
+    font-size: 2.5em; /* Seta grande */
+    line-height: 1;
+    color: #ffd700; /* Amarelo/Dourado para destaque */
+    animation: pulse 1.5s infinite; /* Efeito pulsante */
+}
+
+.arrow-up {
+    margin-bottom: 5px;
+}
+
+.arrow-down {
+    margin-top: 5px;
+}
+
+/* Entrada/Saída: Seta em cima, texto embaixo */
+.entry-exit {
+    flex-direction: column;
+}
+
+/* Bolsão C: Seta embaixo, texto em cima */
+.bolhao-c {
+    flex-direction: column-reverse;
+}
+
+
+/* Efeito de Pulso para as Setas */
+@keyframes pulse {
+    0% { opacity: 0.6; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.1); }
+    100% { opacity: 0.6; transform: scale(1); }
 }

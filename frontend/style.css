@@ -480,3 +480,58 @@ body {
     width: 200px;
   }
 }
+
+/* ======================== */
+/* AJUSTES SOLICITADOS (Inputs Brancos / Botão Preto Animado) */
+/* ======================== */
+
+/* 1. ESTILO DOS CAMPOS DE INPUT (Usuário e Senha) */
+.login-form input {
+    /* Fundo Branco e Texto Preto */
+    background-color: white; /* Fundo branco para os inputs */
+    color: #121212; /* Texto preto para digitar */
+    border: 1px solid #ccc; /* Borda cinza clara para definir */
+    padding: 12px; /* Aumenta um pouco o padding para melhor toque */
+}
+
+.login-form input::placeholder {
+    color: #666; /* Placeholder cinza escuro */
+}
+
+/* 2. ESTILO DO BOTÃO (Entrar) */
+.login-form button {
+    /* Fundo Preto e Texto Branco */
+    background-color: #121212; /* Fundo preto */
+    color: white; /* Texto branco */
+    border: 2px solid #121212; /* Borda preta */
+    padding: 12px;
+    font-weight: bold;
+    /* Adiciona transição para a animação ser suave */
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+.login-form button:hover {
+    background-color:rgba(220, 210, 210, 0.923); ; /* Cor de fundo Azul PUC no hover */
+    border-color: rgba(220, 210, 210, 0.923); /* Borda Azul PUC no hover */
+    color: white; /* Texto se mantém branco */
+}
+
+.login-container {
+    background-color: #002F87;
+    color: white;
+    padding: 40px; 
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    max-width: 400px; 
+    width: 90%; 
+
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    height: auto; 
+}
+
+.login-container h2 {
+    color: white;
+}

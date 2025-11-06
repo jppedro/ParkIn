@@ -4,30 +4,477 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin - ParkIn</title>
-  <link rel="stylesheet" href="style.css" />
+  <style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background-color: #121212;
+  color: #fff;
+}
+
+.header {
+  background-color: #002f87;
+  padding: 20px;
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+}
+
+.voltar {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  z-index: 10;
+}
+
+.voltar:hover {
+  opacity: 0.8;
+}
+
+.titulo-header {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+}
+
+.titulo-header h2 {
+  margin: 0;
+  font-size: 22px;
+  color: #fff;
+}
+
+.logo-header {
+  width: 80px;
+}
+
+.admin-container {
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.section-title {
+  color: #fff;
+  margin: 30px 0 20px;
+  font-size: 24px;
+  text-align: center;
+}
+
+.cameras-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+  padding: 0 20px;
+  margin-bottom: 30px;
+}
+
+.camera-box {
+  background-color: #1f1f1f;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.3s, box-shadow 0.3s;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+.camera-box:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 16px rgba(0,47,135,0.4);
+}
+
+.camera-video-container {
+  position: relative;
+  width: 100%;
+  padding-top: 56.25%;
+  background-color: #000;
+  overflow: hidden;
+}
+
+.camera-video-container video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.camera-video-container::after {
+  content: '▶';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 48px;
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 0 2px 8px rgba(0,0,0,0.7);
+  pointer-events: none;
+}
+
+.camera-info {
+  padding: 15px;
+  background-color: #2b2b2b;
+}
+
+.camera-name {
+  font-size: 16px;
+  font-weight: bold;
+  color: #fff;
+  margin: 0 0 5px 0;
+}
+
+.camera-status {
+  font-size: 13px;
+  color: #4CAF50;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.camera-status::before {
+  content: '●';
+  font-size: 10px;
+}
+
+.camera-status.offline {
+  color: #888;
+}
+
+.camera-status.offline::before {
+  color: #888;
+}
+
+/* Modal para vídeo expandido */
+.video-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.95);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+  animation: fadeIn 0.3s ease;
+}
+
+.video-modal.active {
+  display: flex;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal-content {
+  position: relative;
+  width: 90%;
+  max-width: 1200px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  background-color: #002f87;
+  border-radius: 8px 8px 0 0;
+}
+
+.modal-title {
+  font-size: 20px;
+  font-weight: bold;
+  color: #fff;
+  margin: 0;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 32px;
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.modal-close:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.modal-video-container {
+  position: relative;
+  background-color: #000;
+  width: 100%;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0 0 8px 8px;
+  overflow: hidden;
+}
+
+.modal-video-container video {
+  width: 100%;
+  height: 100%;
+  max-height: 80vh;
+  object-fit: contain;
+}
+
+.admin-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 15px;
+  padding: 0 20px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.card {
+  background-color: #1f1f1f;
+  padding: 30px 20px;
+  border-radius: 12px;
+  color: #fff;
+  cursor: pointer;
+  transition: transform 0.2s;
+  text-align: center;
+}
+
+.card:hover {
+  transform: scale(1.05);
+  background-color: #2b2b2b;
+}
+
+.card p {
+  margin: 0;
+  font-size: 14px;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: #888;
+  font-size: 16px;
+}
+
+.error-message {
+  text-align: center;
+  padding: 20px;
+  color: #f44336;
+  background-color: #2b2b2b;
+  border-radius: 8px;
+  margin: 20px;
+}
+
+.rodape {
+  text-align: center;
+  margin: 30px 0;
+  color: #888;
+  font-size: 12px;
+}
+
+@media (max-width: 768px) {
+  .cameras-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 15px;
+  }
+  
+  .admin-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .modal-content {
+    width: 95%;
+  }
+
+  .modal-title {
+    font-size: 16px;
+  }
+}
+  </style>
 </head>
 <body>
-
-  <div class="header estacionamento-header">
+  <div class="header">
     <button class="voltar" onclick="logout()">← Logout</button>
-    <h2>Área do Segurança</h2>
+    <div class="titulo-header">
+      <h2>Área do Segurança</h2>
+    </div>
     <img src="imagem/puc.png" alt="Logo PUC" class="logo-header" />
   </div>
 
   <div class="admin-container">
-    <h1>Selecione uma Região</h1>
+    <!-- Seção de Câmeras -->
+    <h1 class="section-title">Monitoramento de Câmeras</h1>
+    <div id="cameras-container" class="cameras-grid">
+      <div class="loading">Carregando câmeras...</div>
+    </div>
 
-    <div class="admin-grid">
-      <div class="card" onclick="abrirRegiao('H1')"><p>Setor Bolsão C</p></div>
-      <div class="card" onclick="abrirRegiao('H2')"><p>Setor H2</p></div>
-      <div class="card" onclick="abrirRegiao('H3')"><p>Setor MESCLA</p></div>
-      <div class="card" onclick="abrirRegiao('H4')"><p>Setor H15</p></div>
+
+  <div id="video-modal" class="video-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-camera-name">Câmera</h3>
+        <button class="modal-close" onclick="closeModal()">×</button>
+      </div>
+      <div class="modal-video-container">
+        <video id="modal-video" controls autoplay muted loop></video>
+      </div>
     </div>
   </div>
 
   <footer class="rodape">
+    ParkIn - Sistema de Monitoramento de Estacionamento
   </footer>
 
-  <script src="admin.js"></script>
+  <script>
+const cameraVideos = [
+  'cameras/Camera H7.mp4',
+  'cameras/Camera 1 H15.mp4',
+  'cameras/Camera 2 Mescla.mp4',
+  'cameras/Camera 3 Mescla.mp4',
+];
+
+function getCameraName(filename) {
+  const name = filename.replace('cameras/', '').replace('.mp4', '');
+  return name;
+}
+
+function openModal(videoPath, cameraName) {
+  const modal = document.getElementById('video-modal');
+  const modalVideo = document.getElementById('modal-video');
+  const modalTitle = document.getElementById('modal-camera-name');
+  
+  modalTitle.textContent = cameraName;
+  modalVideo.src = videoPath;
+  modal.classList.add('active');
+  
+  modalVideo.play().catch(error => {
+    console.error('Erro ao reproduzir vídeo:', error);
+  });
+}
+
+function closeModal() {
+  const modal = document.getElementById('video-modal');
+  const modalVideo = document.getElementById('modal-video');
+  
+  modalVideo.pause();
+  modalVideo.src = '';
+  modal.classList.remove('active');
+}
+
+document.getElementById('video-modal').addEventListener('click', function(e) {
+  if (e.target === this) {
+    closeModal();
+  }
+});
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    closeModal();
+  }
+});
+
+function createCameraElement(videoPath, index) {
+  const cameraBox = document.createElement('div');
+  cameraBox.className = 'camera-box';
+  
+  const videoContainer = document.createElement('div');
+  videoContainer.className = 'camera-video-container';
+  
+  const video = document.createElement('video');
+  video.muted = true;
+  video.preload = 'metadata';
+  
+  video.src = videoPath;
+  
+  videoContainer.appendChild(video);
+  
+  const info = document.createElement('div');
+  info.className = 'camera-info';
+  
+  const name = document.createElement('p');
+  name.className = 'camera-name';
+  const cameraName = getCameraName(videoPath);
+  name.textContent = cameraName;
+  
+  const status = document.createElement('p');
+  status.className = 'camera-status';
+  status.textContent = 'Ao vivo';
+  
+  info.appendChild(name);
+  info.appendChild(status);
+  
+  cameraBox.appendChild(videoContainer);
+  cameraBox.appendChild(info);
+  
+  cameraBox.addEventListener('click', () => {
+    openModal(videoPath, cameraName);
+  });
+  
+  video.addEventListener('error', () => {
+    status.textContent = 'Câmera offline';
+    status.classList.add('offline');
+  });
+  
+  video.addEventListener('loadeddata', () => {
+    video.currentTime = 0;
+  });
+  
+  return cameraBox;
+}
+
+function loadCameras() {
+  const container = document.getElementById('cameras-container');
+  container.innerHTML = '';
+  
+  if (cameraVideos.length === 0) {
+    container.innerHTML = '<div class="loading">Nenhuma câmera disponível</div>';
+    return;
+  }
+  
+  cameraVideos.forEach((videoPath, index) => {
+    const cameraElement = createCameraElement(videoPath, index);
+    container.appendChild(cameraElement);
+  });
+}
+
+function logout() {
+  if (confirm('Deseja realmente sair?')) {
+    window.location.href = 'login.html';
+  }
+}
+
+function abrirRegiao(regiao) {
+  window.location.href = `regiao.html?regiao=${regiao}`;
+}
+
+document.addEventListener('DOMContentLoaded', loadCameras);
+
+setInterval(() => {
+
+  console.log('Verificando novas câmeras...');
+}, 30000);
+  </script>
 </body>
 </html>
