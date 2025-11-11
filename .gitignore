@@ -53,3 +53,4 @@ node_modules/
 
 # Docker
 *.log
+backend/ai-management/video_estacionamento_h15.mp4

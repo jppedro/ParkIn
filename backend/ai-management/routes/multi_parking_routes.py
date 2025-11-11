@@ -6,6 +6,8 @@ import numpy as np
 from datetime import datetime
 from werkzeug.utils import secure_filename
 from services.parking_manager import ParkingManager
+from services.video_processor import VideoProcessor
+from services.parking_detector import ParkingDetector
 from config import Config
 
 multi_parking_bp = Blueprint('multi_parking', __name__)
@@ -274,6 +276,125 @@ class MultiParkingRoutes:
             return jsonify({'error': str(e)}), 500
 
     @staticmethod
+    @multi_parking_bp.route('/detect-video', methods=['POST'])
+    def detect_video():
+        """
+        POST /api/parking/detect-video
+        
+        Processa vídeo de drone e atualiza parking_slots.json a cada 10 segundos
+        """
+        try:
+            # Obter parking_id
+            parking_id = request.form.get('parking_id')
+            
+            if not parking_id:
+                return jsonify({'error': 'Campo "parking_id" é obrigatório'}), 400
+            
+            # Obter intervalo personalizado (opcional, padrão 10 segundos)
+            frame_interval = request.form.get('frame_interval', '10')
+            try:
+                frame_interval = int(frame_interval)
+                if frame_interval <= 0:
+                    frame_interval = 10
+            except ValueError:
+                frame_interval = 10
+            
+            # Verificar se vídeo foi enviado
+            if 'video' not in request.files:
+                return jsonify({'error': 'Campo "video" é obrigatório'}), 400
+            
+            file = request.files['video']
+            
+            if file.filename == '':
+                return jsonify({'error': 'Nenhum vídeo selecionado'}), 400
+            
+            # Validar extensão
+            filename_lower = file.filename.lower()
+            is_video = filename_lower.endswith(tuple(Config.ALLOWED_VIDEO_EXTENSIONS))
+            
+            if not is_video:
+                return jsonify({
+                    'error': f'Formato de vídeo inválido. Use: {", ".join(Config.ALLOWED_VIDEO_EXTENSIONS)}'
+                }), 400
+            
+            # Verificar se área existe e tem vagas definidas
+            metadata = parking_manager.get_parking_metadata(parking_id)
+            if not metadata:
+                return jsonify({'error': f'Área não encontrada: {parking_id}'}), 404
+            
+            if not metadata.get('slots_defined'):
+                return jsonify({
+                    'error': f'Vagas não definidas para {parking_id}. Use /define-slots primeiro.'
+                }), 400
+            
+            # Salvar vídeo temporariamente
+            ext = filename_lower.split('.')[-1]
+            temp_filename = f"video_{parking_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.{ext}"
+            video_path = os.path.join(Config.UPLOAD_FOLDER, temp_filename)
+            file.save(video_path)
+            
+            print(f"✅ Vídeo salvo: {video_path}")
+            
+            # Obter informações do vídeo
+            video_processor = VideoProcessor(frame_interval_seconds=frame_interval)
+            video_info = VideoProcessor.get_video_info(video_path)
+            
+            print(f"📹 Informações do vídeo:")
+            print(f"   Duração: {video_info['duration_formatted']}")
+            print(f"   FPS: {video_info['fps']:.2f}")
+            print(f"   Resolução: {video_info['width']}x{video_info['height']}")
+            
+            # Carregar detector para esta área
+            parking_folder = parking_manager._get_parking_folder(parking_id)
+            slots_file = os.path.join(parking_folder, "parking_slots.json")
+            
+            print(f"📂 Carregando vagas de: {slots_file}")
+            if not os.path.exists(slots_file):
+                return jsonify({
+                    'error': f'Arquivo parking_slots.json não encontrado em: {slots_file}'
+                }), 404
+            
+            detector = ParkingDetector(model_path="models/best.pt", slots_file=slots_file)
+            
+            # Obter dimensões da imagem de referência
+            reference_image_path = metadata.get('reference_image')
+            reference_dimensions = None
+            if reference_image_path and os.path.exists(reference_image_path):
+                import cv2
+                ref_img = cv2.imread(reference_image_path)
+                if ref_img is not None:
+                    ref_height, ref_width = ref_img.shape[:2]
+                    reference_dimensions = (ref_width, ref_height)
+                    print(f"📏 Imagem de referência: {ref_width}x{ref_height}")
+            
+            # Processar vídeo
+            summary = video_processor.process_video(
+                video_path=video_path,
+                parking_id=parking_id,
+                parking_name=metadata['name'],
+                detector=detector,
+                parking_folder=parking_folder,
+                reference_dimensions=reference_dimensions
+            )
+            
+            # Adicionar informações do vídeo ao resumo
+            summary['video_info'] = video_info
+            
+            return jsonify({
+                'success': True,
+                'message': 'Vídeo processado com sucesso',
+                **summary
+            }), 200
+            
+        except ValueError as e:
+            return jsonify({'error': str(e)}), 404
+        except Exception as e:
+            import traceback
+            print(f"❌ Erro ao processar vídeo: {e}")
+            print(traceback.format_exc())
+            return jsonify({'error': str(e)}), 500
+
+    @staticmethod
     @multi_parking_bp.route('/status', methods=['GET'])
     def get_status():
         """
@@ -296,17 +417,12 @@ class MultiParkingRoutes:
             # Buscar último resultado (se existir)
             parking_folder = os.path.join(parking_manager.data_folder, parking_id)
             results_folder = os.path.join(parking_folder, "results")
+            history_file = os.path.join(results_folder, "history.json")
 
             last_detection = None
-            if os.path.exists(results_folder):
-                history_files = sorted(
-                    [f for f in os.listdir(results_folder) if f.startswith('history_')],
-                    reverse=True
-                )
-
-                if history_files:
-                    with open(os.path.join(results_folder, history_files[0]), 'r') as f:
-                        last_detection = json.load(f)
+            if os.path.exists(history_file):
+                with open(history_file, 'r') as f:
+                    last_detection = json.load(f)
 
             layout_groups = MultiParkingRoutes._build_dynamic_layout(
                 parking_id,

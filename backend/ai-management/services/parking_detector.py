@@ -33,11 +33,13 @@ class ParkingDetector:
         
         self.slots = data['slots']
         self.total_slots = len(self.slots)
+        self.original_slots = [slot.copy() for slot in self.slots]  # Backup das coordenadas originais
         print(f"Coordenadas das vagas carregadas: {self.total_slots} vagas")
         
         # Configurações
-        self.confidence_threshold = 0.3  # Confiança mínima para detectar carros
+        self.confidence_threshold = 0.25  # Confiança mínima para detectar carros (reduzido para detectar mais)
         self.overlap_threshold = 0.3      # 30% de sobreposição para considerar ocupada
+        self.reference_dimensions = None  # Dimensões da imagem de referência
     
     def _point_in_polygon(self, point, polygon):
         """Verifica se um ponto está dentro de um polígono"""
@@ -82,7 +84,39 @@ class ParkingDetector:
         
         return overlap_percentage
     
-    def detect_cars_in_image(self, image_path, save_result=False, output_path=None):
+    def scale_coordinates(self, reference_width, reference_height, target_width, target_height):
+        """
+        Escala as coordenadas das vagas para uma nova resolução
+        
+        Args:
+            reference_width: Largura da imagem de referência
+            reference_height: Altura da imagem de referência
+            target_width: Largura da imagem alvo
+            target_height: Altura da imagem alvo
+        """
+        scale_x = target_width / reference_width
+        scale_y = target_height / reference_height
+        
+        print(f"   📐 Escalando coordenadas:")
+        print(f"      Referência: {reference_width}x{reference_height}")
+        print(f"      Alvo: {target_width}x{target_height}")
+        print(f"      Escala: X={scale_x:.3f}, Y={scale_y:.3f}")
+        
+        # IMPORTANTE: Restaurar coordenadas originais antes de escalar
+        # Isso evita escalonamento acumulativo entre frames
+        self.slots = [slot.copy() for slot in self.original_slots]
+        
+        # Escalar coordenadas de cada vaga
+        for i, slot in enumerate(self.slots):
+            scaled_coords = []
+            for x, y in self.original_slots[i]['coordinates']:
+                scaled_x = int(x * scale_x)
+                scaled_y = int(y * scale_y)
+                scaled_coords.append([scaled_x, scaled_y])
+            
+            self.slots[i]['coordinates'] = scaled_coords
+    
+    def detect_cars_in_image(self, image_path, save_result=False, output_path=None, reference_dimensions=None):
         """
         Detecta carros e calcula ocupação das vagas em uma IMAGEM
         
@@ -112,10 +146,19 @@ class ParkingDetector:
         img_height, img_width = image.shape[:2]
         print(f"   Dimensões: {img_width}x{img_height}")
         
+        # Escalar coordenadas se necessário
+        if reference_dimensions:
+            ref_width, ref_height = reference_dimensions
+            if (ref_width != img_width) or (ref_height != img_height):
+                self.scale_coordinates(ref_width, ref_height, img_width, img_height)
+        
         # Detectar carros
         results = self.model.predict(
             image_path, 
-            conf=self.confidence_threshold, 
+            conf=self.confidence_threshold,
+            iou=0.5,  # Threshold de IoU para NMS (Non-Maximum Suppression)
+            imgsz=1280,  # Tamanho da imagem para inferência
+            max_det=300,  # Máximo de detecções (aumentado de 100 padrão)
             verbose=False
         )
         
