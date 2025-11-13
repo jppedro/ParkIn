@@ -12,7 +12,6 @@ from config import Config
 
 multi_parking_bp = Blueprint('multi_parking', __name__)
 
-# Inicializar gerenciador
 parking_manager = ParkingManager(data_folder="parking_data")
 
 class MultiParkingRoutes:
@@ -21,20 +20,17 @@ class MultiParkingRoutes:
     @multi_parking_bp.route('/setup', methods=['POST'])
     def setup_parking_area():
         try:
-            # Obter dados do formulário
             name = request.form.get('name')
             description = request.form.get('description', '')
 
             if not name:
                 return jsonify({'error': 'Campo "name" é obrigatório'}), 400
 
-            # Processar imagem de referência (se enviada)
             reference_image_path = None
             if 'reference_image' in request.files:
                 file = request.files['reference_image']
 
                 if file.filename != '':
-                    # Validar extensão
                     filename_lower = file.filename.lower()
                     is_image = filename_lower.endswith(tuple(Config.ALLOWED_IMAGE_EXTENSIONS))
 
@@ -43,13 +39,11 @@ class MultiParkingRoutes:
                             'error': 'Formato de imagem inválido. Use: .jpg, .jpeg, .png, .bmp'
                         }), 400
 
-                    # Salvar temporariamente
                     ext = filename_lower.split('.')[-1]
                     temp_filename = f"temp_ref_{datetime.now().strftime('%Y%m%d_%H%M%S')}.{ext}"
                     reference_image_path = os.path.join(Config.UPLOAD_FOLDER, temp_filename)
                     file.save(reference_image_path)
 
-            # Criar área de estacionamento
             parking_id = parking_manager.create_parking_area(
                 name=name,
                 description=description,
@@ -155,7 +149,6 @@ class MultiParkingRoutes:
             if not slots or not isinstance(slots, list):
                 return jsonify({'error': 'Campo "slots" deve ser uma lista'}), 400
 
-            # Validar estrutura das vagas
             for slot in slots:
                 if 'id' not in slot or 'coordinates' not in slot:
                     return jsonify({
@@ -167,7 +160,6 @@ class MultiParkingRoutes:
                         'error': 'coordinates deve ser uma lista com pelo menos 3 pontos [[x1,y1], [x2,y2], ...]'
                     }), 400
 
-            # Definir vagas
             success = parking_manager.define_slots(parking_id, slots)
 
             marked_filename = None
@@ -201,7 +193,6 @@ class MultiParkingRoutes:
                                 2
                             )
 
-                        # Salvar em uploads/
                         marked_filename = f"parking_slots_{parking_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.jpg"
                         marked_path = os.path.join(Config.UPLOAD_FOLDER, marked_filename)
                         cv2.imwrite(marked_path, img)
@@ -228,13 +219,11 @@ class MultiParkingRoutes:
     @multi_parking_bp.route('/detect', methods=['POST'])
     def detect_occupancy():
         try:
-            # Obter parking_id
             parking_id = request.form.get('parking_id')
 
             if not parking_id:
                 return jsonify({'error': 'Campo "parking_id" é obrigatório'}), 400
 
-            # Verificar se imagem foi enviada
             if 'image' not in request.files:
                 return jsonify({'error': 'Campo "image" é obrigatório'}), 400
 
@@ -243,7 +232,6 @@ class MultiParkingRoutes:
             if file.filename == '':
                 return jsonify({'error': 'Nenhuma imagem selecionada'}), 400
 
-            # Validar extensão
             filename_lower = file.filename.lower()
             is_image = filename_lower.endswith(tuple(Config.ALLOWED_IMAGE_EXTENSIONS))
 
@@ -252,13 +240,11 @@ class MultiParkingRoutes:
                     'error': 'Formato de imagem inválido. Use: .jpg, .jpeg, .png, .bmp'
                 }), 400
 
-            # Salvar imagem temporariamente
             ext = filename_lower.split('.')[-1]
             temp_filename = f"detect_{parking_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.{ext}"
             image_path = os.path.join(Config.UPLOAD_FOLDER, temp_filename)
             file.save(image_path)
 
-            # Detectar ocupação
             results = parking_manager.detect_occupancy(
                 parking_id=parking_id,
                 image_path=image_path,
@@ -284,13 +270,11 @@ class MultiParkingRoutes:
         Processa vídeo de drone e atualiza parking_slots.json a cada 10 segundos
         """
         try:
-            # Obter parking_id
             parking_id = request.form.get('parking_id')
             
             if not parking_id:
                 return jsonify({'error': 'Campo "parking_id" é obrigatório'}), 400
             
-            # Obter intervalo personalizado (opcional, padrão 10 segundos)
             frame_interval = request.form.get('frame_interval', '10')
             try:
                 frame_interval = int(frame_interval)
@@ -299,7 +283,6 @@ class MultiParkingRoutes:
             except ValueError:
                 frame_interval = 10
             
-            # Verificar se vídeo foi enviado
             if 'video' not in request.files:
                 return jsonify({'error': 'Campo "video" é obrigatório'}), 400
             
@@ -308,7 +291,6 @@ class MultiParkingRoutes:
             if file.filename == '':
                 return jsonify({'error': 'Nenhum vídeo selecionado'}), 400
             
-            # Validar extensão
             filename_lower = file.filename.lower()
             is_video = filename_lower.endswith(tuple(Config.ALLOWED_VIDEO_EXTENSIONS))
             
@@ -317,7 +299,6 @@ class MultiParkingRoutes:
                     'error': f'Formato de vídeo inválido. Use: {", ".join(Config.ALLOWED_VIDEO_EXTENSIONS)}'
                 }), 400
             
-            # Verificar se área existe e tem vagas definidas
             metadata = parking_manager.get_parking_metadata(parking_id)
             if not metadata:
                 return jsonify({'error': f'Área não encontrada: {parking_id}'}), 404
@@ -327,7 +308,6 @@ class MultiParkingRoutes:
                     'error': f'Vagas não definidas para {parking_id}. Use /define-slots primeiro.'
                 }), 400
             
-            # Salvar vídeo temporariamente
             ext = filename_lower.split('.')[-1]
             temp_filename = f"video_{parking_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.{ext}"
             video_path = os.path.join(Config.UPLOAD_FOLDER, temp_filename)
@@ -335,7 +315,6 @@ class MultiParkingRoutes:
             
             print(f"✅ Vídeo salvo: {video_path}")
             
-            # Obter informações do vídeo
             video_processor = VideoProcessor(frame_interval_seconds=frame_interval)
             video_info = VideoProcessor.get_video_info(video_path)
             
@@ -344,7 +323,6 @@ class MultiParkingRoutes:
             print(f"   FPS: {video_info['fps']:.2f}")
             print(f"   Resolução: {video_info['width']}x{video_info['height']}")
             
-            # Carregar detector para esta área
             parking_folder = parking_manager._get_parking_folder(parking_id)
             slots_file = os.path.join(parking_folder, "parking_slots.json")
             
@@ -356,7 +334,6 @@ class MultiParkingRoutes:
             
             detector = ParkingDetector(model_path="models/best.pt", slots_file=slots_file)
             
-            # Obter dimensões da imagem de referência
             reference_image_path = metadata.get('reference_image')
             reference_dimensions = None
             if reference_image_path and os.path.exists(reference_image_path):
@@ -367,7 +344,6 @@ class MultiParkingRoutes:
                     reference_dimensions = (ref_width, ref_height)
                     print(f"📏 Imagem de referência: {ref_width}x{ref_height}")
             
-            # Processar vídeo
             summary = video_processor.process_video(
                 video_path=video_path,
                 parking_id=parking_id,
@@ -377,7 +353,6 @@ class MultiParkingRoutes:
                 reference_dimensions=reference_dimensions
             )
             
-            # Adicionar informações do vídeo ao resumo
             summary['video_info'] = video_info
             
             return jsonify({
@@ -408,13 +383,11 @@ class MultiParkingRoutes:
             if not parking_id:
                 return jsonify({'error': 'Query param "parking_id" é obrigatório'}), 400
 
-            # Obter metadados
             metadata = parking_manager.get_parking_metadata(parking_id)
 
             if not metadata:
                 return jsonify({'error': f'Área não encontrada: {parking_id}'}), 404
 
-            # Buscar último resultado (se existir)
             parking_folder = os.path.join(parking_manager.data_folder, parking_id)
             results_folder = os.path.join(parking_folder, "results")
             history_file = os.path.join(results_folder, "history.json")
@@ -495,13 +468,11 @@ class MultiParkingRoutes:
             if not metadata:
                 return jsonify({'error': 'Área não encontrada'}), 404
 
-            # Obter tipo de imagem solicitado
             image_type = request.args.get('type', 'reference')
 
             image_path = None
 
             if image_type == 'detection':
-                # Buscar última imagem de detecção
                 results_folder = os.path.join(
                     parking_manager.data_folder,
                     parking_id,
@@ -511,7 +482,6 @@ class MultiParkingRoutes:
                 if not os.path.exists(results_folder):
                     return jsonify({'error': 'Nenhuma detecção disponível'}), 404
 
-                # Listar arquivos de detecção (ordenar por data)
                 detection_files = [
                     f for f in os.listdir(results_folder)
                     if f.startswith('detection_') and f.endswith(('.jpg', '.jpeg', '.png'))
@@ -520,7 +490,6 @@ class MultiParkingRoutes:
                 if not detection_files:
                     return jsonify({'error': 'Nenhuma imagem de detecção disponível'}), 404
 
-                # Pegar a mais recente
                 detection_files.sort(reverse=True)
                 image_path = os.path.join(results_folder, detection_files[0])
 

@@ -101,9 +101,7 @@ class ParkingDetector:
         print(f"      Referência: {reference_width}x{reference_height}")
         print(f"      Alvo: {target_width}x{target_height}")
         print(f"      Escala: X={scale_x:.3f}, Y={scale_y:.3f}")
-        
-        # IMPORTANTE: Restaurar coordenadas originais antes de escalar
-        # Isso evita escalonamento acumulativo entre frames
+
         self.slots = [slot.copy() for slot in self.original_slots]
         
         # Escalar coordenadas de cada vaga
@@ -157,8 +155,8 @@ class ParkingDetector:
             image_path, 
             conf=self.confidence_threshold,
             iou=0.5,  # Threshold de IoU para NMS (Non-Maximum Suppression)
-            imgsz=1280,  # Tamanho da imagem para inferência
-            max_det=300,  # Máximo de detecções (aumentado de 100 padrão)
+            imgsz=1280,
+            max_det=300,
             verbose=False
         )
         

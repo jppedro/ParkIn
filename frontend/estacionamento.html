@@ -28,11 +28,9 @@
 </footer>
 
 <script>
-    // URL da API Multi-Parking
     const API_BASE_URL = 'http://localhost:5001';
     const API_URL = `${API_BASE_URL}/api/parking/list`;
 
-    // Carregar áreas de estacionamento ao carregar a página
     window.addEventListener('DOMContentLoaded', async () => {
       try {
         const response = await fetch(API_URL);
@@ -57,7 +55,7 @@
     // Renderizar cards das áreas de estacionamento
     function renderParkingAreas(parkings) {
       const container = document.getElementById('estacionamento-lista');
-      container.innerHTML = ''; // Limpar loading
+      container.innerHTML = '';
 
       parkings.forEach(parking => {
         const card = createParkingCard(parking);
@@ -70,11 +68,9 @@
       const card = document.createElement('div');
       card.className = 'vaga-card';
 
-      // Define a variável CSS que o 'style.css' (com blur) usa
       const imageUrl = `${API_BASE_URL}/api/parking/image/${parking.parking_id}`;
       card.style.setProperty('--bg-image', `url(${imageUrl})`);
 
-      // Header do card (título + status)
       const header = document.createElement('div');
       header.className = 'card-header';
 
@@ -90,7 +86,6 @@
       header.appendChild(status);
       card.appendChild(header);
 
-      // Descrição (se existir)
       if (parking.description) {
         const description = document.createElement('div');
         description.className = 'card-description';

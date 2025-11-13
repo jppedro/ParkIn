@@ -19,7 +19,6 @@ class ParkingAPI:
         Config.init_folders()
             
     def _register_routes(self):
-        # Health check endpoint
         @self.app.route('/', methods=['GET'])
         def health_check():
             from flask import jsonify
@@ -30,7 +29,6 @@ class ParkingAPI:
                 'version': '2.0.0 - Multi-Parking API'
             })
         
-        # Registrar rotas multi-parking
         from routes.multi_parking_routes import multi_parking_bp
         self.app.register_blueprint(multi_parking_bp, url_prefix='/api/parking')
         

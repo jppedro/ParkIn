@@ -1,10 +1,6 @@
-/* =========================================== */
-/* === INÍCIO DOS NOVOS ESTILOS DO MAPA === */
-/* =========================================== */
 
-/* O fundo (A "ESTRADA") */
 .parking-map-background {
-  background-color: #2e3338; /* Cor de asfalto */
+  background-color: #2e3338;
   border-radius: 16px;
   padding: 25px;
   margin: 20px auto;
@@ -13,25 +9,21 @@
 
   display: flex;
   justify-content: center;
-  gap: 10px; /* Espaço entre fileiras e corredores */
+  gap: 10px;
 
   box-shadow: 0 4px 12px rgba(0,0,0,0.4);
 }
 
-/* Cada fileira (coluna de vagas) */
 .parking-aisle {
   display: flex;
   flex-direction: column;
-  gap: 6px; /* Espaço entre as vagas (boxes) */
-  justify-content: space-between; /* Alinha as vagas */
+  gap: 6px;
+  justify-content: space-between;
 }
 
-/* O "corredor" (com a TEXTURA) */
 .aisle-lane {
   width: 40px;
-  /* Cor de fallback (plano B) */
   background-color: #3a3f44;
-  /* A IMAGEM DE TEXTURA QUE VOCÊ MANDOU */
   background-image: url('imagem/textura_corredor.png');
   background-size: cover;
   background-position: center;
@@ -40,15 +32,11 @@
   position: relative;
 }
 
-/* Corredor central (com "PARE") é um pouco mais claro */
 .aisle-lane.central {
   width: 60px;
 }
 
-/* A classe .mato foi REMOVIDA */
 
-
-/* O texto "PARE" e "DEVAGAR" no corredor central */
 .map-text {
   position: absolute;
   color: rgba(255, 255, 255, 0.4);
@@ -65,22 +53,18 @@
 }
 .text-devagar {
   bottom: 15px;
-  transform: translateX(-50%) rotate(180deg); /* Inverte 'DEVAGAR' */
+  transform: translateX(-50%) rotate(180deg);
 }
 
 
-/* A VAGA (o "cardzinho") */
 .spot-box {
-  /* Estilo "H15" */
-  width: 90px;  /* Largura do retângulo */
-  height: 35px; /* Altura do retângulo */
+  width: 90px;
+  height: 35px;
   border-radius: 4px;
 
-  /* Cores padrão (Vaga Desconhecida / 'unknown') */
   background-color: #5a5a5a;
   border: 1px solid #444;
 
-  /* Texto (número da vaga) */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -92,35 +76,27 @@
   transition: all 0.2s ease;
 }
 
-/* Cor da Vaga Ocupada */
 .spot-box.occupied {
-  background-color: #c92a2a; /* Vermelho mais forte */
+  background-color: #c92a2a;
   border-color: #a62323;
   color: #fff;
 }
 
-/* Cor da Vaga Livre */
 .spot-box.free {
-  background-color: #37b24d; /* Verde mais forte */
+  background-color: #37b24d;
   border-color: #2f9e44;
   color: #fff;
 }
 
-/* Estilo para vagas verticais */
 .spot-box.vertical {
-  width: 35px;  /* Largura menor */
-  height: 90px; /* Altura maior */
+  width: 35px;
+  height: 90px;
 }
 
-/* =========================================== */
-/* === FIM DOS NOVOS ESTILOS DO MAPA === */
-/* =========================================== */
 
-
-/* (Estilos antigos que continuam úteis) */
 
 .parking-container {
-  max-width: 1200px; /* Aumentar largura máxima */
+  max-width: 1200px;
   margin: 20px auto;
   padding: 20px;
   background-color: #1f1f1f;
@@ -184,17 +160,17 @@
 }
 
 .legend-color.free {
-  background-color: #37b24d; /* Cor da legenda atualizada */
+  background-color: #37b24d;
   border-color: #2f9e44;
 }
 
 .legend-color.occupied {
-  background-color: #c92a2a; /* Cor da legenda atualizada */
+  background-color: #c92a2a;
   border-color: #a62323;
 }
 
 .legend-color.unknown {
-  background-color: #5a5a5a; /* Cor da legenda atualizada */
+  background-color: #5a5a5a;
   border-color: #444;
 }
 
@@ -237,4 +213,147 @@
   color: #888;
   font-size: 12px;
   margin-top: 15px;
+}
+
+.parking-layout-container {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  padding: 20px;
+  background-color: #333;
+  border-radius: 8px;
+  max-width: fit-content;
+  margin: 0 auto;
+  flex-wrap: wrap;
+}
+
+.parking-aisle {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+@media (max-width: 768px) {
+  .parking-container {
+    margin: 10px;
+    padding: 15px;
+  }
+  
+  .parking-grid {
+    grid-template-columns: repeat(8, 1fr);
+    max-width: 100%;
+  }
+  
+  .parking-spot {
+    width: 35px;
+    height: 50px;
+    font-size: 9px;
+  }
+  
+  .parking-info {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .parking-title {
+    font-size: 20px;
+  }
+  
+  .info-card {
+    min-width: 100px;
+  }
+  
+  .legend {
+    gap: 20px;
+  }
+  
+  .refresh-btn {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .parking-grid {
+    grid-template-columns: repeat(6, 1fr);
+    padding: 15px;
+  }
+  
+  .parking-spot {
+    width: 30px;
+    height: 45px;
+    font-size: 8px;
+  }
+  
+  .parking-info {
+    gap: 10px;
+  }
+  
+  .info-card {
+    padding: 12px;
+    min-width: 90px;
+  }
+  
+  .info-card h3 {
+    font-size: 16px;
+  }
+  
+  .info-card p {
+    font-size: 12px;
+  }
+  
+  .legend {
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+  }
+}
+
+.direction-indicator {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    margin: 15px auto;
+    color: #fff;
+    font-weight: bold;
+    font-size: 1.1em;
+    text-align: center;
+}
+
+.direction-indicator p {
+    margin: 0 10px;
+    padding: 5px;
+    border-radius: 4px;
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.arrow-up, .arrow-down {
+    font-size: 2.5em;
+    line-height: 1;
+    color: #ffd700;
+    animation: pulse 1.5s infinite;
+}
+
+.arrow-up {
+    margin-bottom: 5px;
+}
+
+.arrow-down {
+    margin-top: 5px;
+}
+
+.entry-exit {
+    flex-direction: column;
+}
+
+.bolhao-c {
+    flex-direction: column-reverse;
+}
+
+
+@keyframes pulse {
+    0% { opacity: 0.6; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.1); }
+    100% { opacity: 0.6; transform: scale(1); }
 }

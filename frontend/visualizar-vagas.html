@@ -93,7 +93,7 @@
       loadingEl.style.display = 'block';
       errorEl.style.display = 'none';
       contentEl.style.display = 'none';
-      mapContainer.style.display = 'none'; // Esconde o mapa
+      mapContainer.style.display = 'none';
 
       const parkingId = getParkingIdFromURL();
 
@@ -111,7 +111,6 @@
         const layoutGroups = data.layout_groups;
 
         if (lastDetection && layoutGroups && layoutGroups.length > 0) {
-          // Atualizar os cards de estatísticas
           document.getElementById('total-spots').textContent = lastDetection.total_slots || 0;
           document.getElementById('free-spots').textContent = lastDetection.empty || 0;
           document.getElementById('occupied-spots').textContent = lastDetection.occupied || 0;
@@ -124,9 +123,8 @@
               `Última atualização: ${date.toLocaleString('pt-BR')}`;
           }
 
-          // Chamar a função de renderizar, passando o layout da API
           renderSlotLayout(layoutGroups);
-          mapContainer.style.display = 'flex'; // Mostra o mapa
+          mapContainer.style.display = 'flex';
 
         } else {
           let errorMsg = 'Nenhuma detecção disponível para esta área.';
@@ -156,7 +154,6 @@
 
       console.log(`Renderizando ${layoutGroups.length} fileiras dinâmicas...`);
 
-      // A 'aisle' é a fileira (coluna), o 'index' é o número dela (0 a 6)
       layoutGroups.forEach((aisle, index) => {
 
         const aisleDiv = document.createElement('div');
@@ -164,10 +161,8 @@
 
         aisle.forEach(slot => {
           const box = document.createElement('div');
-          box.className = 'spot-box'; // Padrão é HORIZONTAL
+          box.className = 'spot-box';
 
-          // Lógica para a fileira do meio ser vertical
-          // (Assumindo 7 fileiras, a do meio é a de índice 3)
           if (layoutGroups.length === 7 && index === 3) {
               box.classList.add('vertical');
           }
@@ -181,16 +176,12 @@
 
         layoutContainer.appendChild(aisleDiv);
 
-        // Adicionar corredor
-        if (index < layoutGroups.length - 1) { // 7 fileiras = 6 corredores (índices 0 a 5)
+        if (index < layoutGroups.length - 1) {
           const laneDiv = document.createElement('div');
-          laneDiv.className = 'aisle-lane'; // Padrão (agora com textura)
+          laneDiv.className = 'aisle-lane';
 
-          // --- LÓGICA DO "MATO" REMOVIDA ---
-
-          // O corredor central (com o PARE) é o de índice 3
           if (layoutGroups.length === 7 && index === 3) {
-             laneDiv.classList.add('central'); // Fica mais largo
+             laneDiv.classList.add('central');
              laneDiv.innerHTML = `<span class="map-text text-pare">PARE</span>
                                   <span class="map-text text-devagar">DEVAGAR</span>`;
           }
@@ -222,10 +213,9 @@
       errorEl.textContent = `⚠️ ${message}`;
     }
 
-    // Carregar dados quando a página carregar
     document.addEventListener('DOMContentLoaded', () => {
       loadParkingData();
-      setInterval(loadParkingData, 5000); // Atualiza a cada 5 segundos
+      setInterval(loadParkingData, 5000);
     });
 </script>
 </body>
