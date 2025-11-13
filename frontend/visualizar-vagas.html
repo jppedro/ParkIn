@@ -1,89 +1,92 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Visualizar Vagas - ParkIn</title>
-  <link rel="stylesheet" href="style.css?v=2">
-  <link rel="stylesheet" href="visualizar-vagas.css?v=2">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualizar Vagas - ParkIn</title>
+    <link rel="stylesheet" href="style.css?v=2">
+    <link rel="stylesheet" href="visualizar-vagas.css?v=2">
 </head>
 <body>
 
-  <div class="header estacionamento-header">
-    <button class="voltar" onclick="window.location.href='estacionamento.html'">← Voltar</button>
-    <img src="imagem/puc.png" alt="Logo PUC" class="logo-header">
-  </div>
-
-  <div class="parking-container">
-    <h1 class="parking-title">Status do Estacionamento</h1>
-
-    <div id="loading" class="loading">
-      Carregando informações das vagas...
+    <div class="header estacionamento-header">
+        <button class="voltar" onclick="window.location.href='estacionamento.html'">← Voltar</button>
+        <img src="imagem/puc.png" alt="Logo PUC" class="logo-header">
     </div>
 
-    <div id="error" class="error" style="display: none;">
-      Erro ao carregar dados. Verifique se o backend está rodando.
+    <div class="parking-container">
+        <h1 class="parking-title">Status do Estacionamento</h1>
+
+        <div id="loading" class="loading">
+            Carregando informações das vagas...
+        </div>
+
+        <div id="error" class="error" style="display: none;">
+            Erro ao carregar dados. Verifique se o backend está rodando.
+        </div>
+
+        <div id="parking-content" style="display: none;">
+            <div class="parking-info">
+                <div class="info-card">
+                    <h3 id="total-spots">0</h3>
+                    <p>Total de Vagas</p>
+                </div>
+                <div class="info-card">
+                    <h3 id="free-spots">0</h3>
+                    <p>Vagas Livres</p>
+                </div>
+                <div class="info-card">
+                    <h3 id="occupied-spots">0</h3>
+                    <p>Vagas Ocupadas</p>
+                </div>
+                <div class="info-card">
+                    <h3 id="occupancy-rate">0%</h3>
+                    <p>Taxa de Ocupação</p>
+                </div>
+            </div>
+
+            <!-- ENTRADA/SAÍDA - Antes do container de vagas --><div class="direction-indicator entry-exit">
+                <p>ENTRADA / SAÍDA (H15)</p>
+                <span class="arrow-up">↑</span>
+            </div>
+
+            <div id="parking-image-container" class="parking-image-container">
+                <img id="parking-image" class="parking-image" src="" alt="Imagem do Estacionamento" style="display: none;">
+                <div id="parking-overlay" class="parking-overlay">
+                    <!-- Vagas serão sobrepostas aqui --></div>
+            </div>
+
+            <div id="parking-layout-container" class="parking-layout-container" style="display: none;">
+                <!-- Grid alternativo caso não haja imagem --></div>
+
+            <!-- DIREÇÃO BOLSÃO C - Depois do container de vagas --><div class="direction-indicator bolhao-c">
+                <span class="arrow-down">↓</span>
+                <p>DIREÇÃO BOLSÃO C</p>
+            </div>
+
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color free"></div>
+                    <span style="color: #fff;">Vaga Livre</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color occupied"></div>
+                    <span style="color: #fff;">Vaga Ocupada</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color unknown"></div>
+                    <span style="color: #fff;">Status Desconhecido</span>
+                </div>
+            </div>
+
+            <button class="refresh-btn" onclick="loadParkingData()">
+                Atualizar Status
+            </button>
+
+            <div id="last-updated" class="last-updated">
+                <!-- Última atualização será mostrada aqui --></div>
+        </div>
     </div>
-
-    <div id="parking-content" style="display: none;">
-      <div class="parking-info">
-        <div class="info-card">
-          <h3 id="total-spots">0</h3>
-          <p>Total de Vagas</p>
-        </div>
-        <div class="info-card">
-          <h3 id="free-spots">0</h3>
-          <p>Vagas Livres</p>
-        </div>
-        <div class="info-card">
-          <h3 id="occupied-spots">0</h3>
-          <p>Vagas Ocupadas</p>
-        </div>
-        <div class="info-card">
-          <h3 id="occupancy-rate">0%</h3>
-          <p>Taxa de Ocupação</p>
-        </div>
-      </div>
-
-      <div id="parking-image-container" class="parking-image-container">
-        <img id="parking-image" class="parking-image" src="" alt="Imagem do Estacionamento" style="display: none;">
-        <div id="parking-overlay" class="parking-overlay">
-          <!-- Vagas serão sobrepostas aqui -->
-        </div>
-      </div>
-
-        <div id="parking-layout-container" class="parking-layout-container" style="display: none;">
-        <!-- Grid alternativo caso não haja imagem -->
-      </div>
-
-      <div class="legend">
-        <div class="legend-item">
-          <div class="legend-color free"></div>
-          <span style="color: #fff;">Vaga Livre</span>
-        </div>
-        <div class="legend-item">
-          <div class="legend-color occupied"></div>
-          <span style="color: #fff;">Vaga Ocupada</span>
-        </div>
-        <div class="legend-item">
-          <div class="legend-color unknown"></div>
-          <span style="color: #fff;">Status Desconhecido</span>
-        </div>
-      </div>
-
-      <button class="refresh-btn" onclick="loadParkingData()">
-        Atualizar Status
-      </button>
-
-      <div id="last-updated" class="last-updated">
-        <!-- Última atualização será mostrada aqui -->
-      </div>
-    </div>
-  </div>
-
-  <footer class="rodape">
-    <p>v0.0.0.1</p>
-  </footer>
 
   <script>
       const API_BASE_URL = 'http://localhost:5001';
