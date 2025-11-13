@@ -1,48 +1,48 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Estacionamento - PUC</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estacionamento - PUC</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <div class="header estacionamento-header">
+<div class="header estacionamento-header">
     <button class="voltar" onclick="window.location.href='index.html'">← Voltar</button>
     <img src="imagem/puc.png" alt="Logo PUC" class="logo-header">
-  </div>
+</div>
 
-  <div class="estacionamento-imagem">
-    <img src="imagem/drone.jpg" alt="Imagem Estacionamento">
-  </div>
-
-  <div class="estacionamento-lista" id="estacionamento-lista">
-    <!-- Cards serão carregados dinamicamente aqui -->
+<div class="container-titulo">
+    <h1>Áreas de Estacionamento</h1>
+    <p>Selecione uma área para ver o status em tempo real.</p>
+</div>
+<div class="estacionamento-lista" id="estacionamento-lista">
     <div class="loading">
-      <p>Carregando áreas de estacionamento...</p>
+        <p>Carregando áreas de estacionamento...</p>
     </div>
-  </div>
+</div>
 
-  <footer class="rodape">
+<footer class="rodape">
     <p>v0.0.0.1</p>
-  </footer>
+</footer>
 
-  <script>
+<script>
     // URL da API Multi-Parking
-    const API_URL = 'http://localhost:5001/api/parking/list';
+    const API_BASE_URL = 'http://localhost:5001';
+    const API_URL = `${API_BASE_URL}/api/parking/list`;
 
     // Carregar áreas de estacionamento ao carregar a página
     window.addEventListener('DOMContentLoaded', async () => {
       try {
         const response = await fetch(API_URL);
-        
+
         if (!response.ok) {
           throw new Error(`Erro ao buscar dados: ${response.status}`);
         }
 
         const data = await response.json();
-        
+
         if (data.success && data.parkings && data.parkings.length > 0) {
           renderParkingAreas(data.parkings);
         } else {
@@ -69,23 +69,27 @@
     function createParkingCard(parking) {
       const card = document.createElement('div');
       card.className = 'vaga-card';
-      
+
+      // Define a variável CSS que o 'style.css' (com blur) usa
+      const imageUrl = `${API_BASE_URL}/api/parking/image/${parking.parking_id}`;
+      card.style.setProperty('--bg-image', `url(${imageUrl})`);
+
       // Header do card (título + status)
       const header = document.createElement('div');
       header.className = 'card-header';
-      
+
       const title = document.createElement('span');
       title.className = 'card-title';
       title.textContent = parking.name;
-      
+
       const status = document.createElement('span');
       status.className = `card-status ${parking.slots_defined ? 'status-active' : 'status-pending'}`;
       status.textContent = parking.slots_defined ? 'Configurado' : 'Pendente';
-      
+
       header.appendChild(title);
       header.appendChild(status);
       card.appendChild(header);
-      
+
       // Descrição (se existir)
       if (parking.description) {
         const description = document.createElement('div');
@@ -93,20 +97,20 @@
         description.textContent = parking.description;
         card.appendChild(description);
       }
-      
+
       // Total de vagas
       const slots = document.createElement('div');
       slots.className = 'card-slots';
       slots.textContent = `Total de vagas: ${parking.total_slots || 0}`;
       card.appendChild(slots);
-      
+
       // Adicionar evento de clique
       card.addEventListener('click', () => {
         localStorage.setItem('current_parking_id', parking.parking_id);
         localStorage.setItem('current_parking_name', parking.name);
         window.location.href = `visualizar-vagas.html?parking_id=${parking.parking_id}`;
       });
-      
+
       return card;
     }
 
@@ -114,18 +118,18 @@
     function showEmptyState() {
       const container = document.getElementById('estacionamento-lista');
       container.innerHTML = ''; // Limpar container
-      
+
       const emptyState = document.createElement('div');
       emptyState.className = 'empty-state';
-      
+
       const icon = document.createElement('p');
       icon.className = 'empty-state-icon';
       icon.textContent = 'Nenhuma área cadastrada';
-      
+
       const message = document.createElement('p');
       message.className = 'empty-state-message';
       message.textContent = 'Entre em contato com o administrador para cadastrar áreas de estacionamento.';
-      
+
       emptyState.appendChild(icon);
       emptyState.appendChild(message);
       container.appendChild(emptyState);
@@ -135,29 +139,29 @@
     function showErrorState(errorMessage) {
       const container = document.getElementById('estacionamento-lista');
       container.innerHTML = ''; // Limpar container
-      
+
       const errorState = document.createElement('div');
       errorState.className = 'error-state';
-      
+
       const icon = document.createElement('p');
       icon.className = 'error-state-icon';
       icon.textContent = 'Erro ao carregar';
-      
+
       const message = document.createElement('p');
       message.className = 'error-state-message';
       message.textContent = errorMessage;
-      
+
       const retryButton = document.createElement('button');
       retryButton.className = 'retry-button';
       retryButton.textContent = '🔄 Tentar novamente';
       retryButton.addEventListener('click', () => location.reload());
-      
+
       errorState.appendChild(icon);
       errorState.appendChild(message);
       errorState.appendChild(retryButton);
       container.appendChild(errorState);
     }
-  </script>
+</script>
 
 </body>
 </html>

@@ -1,213 +1,232 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Visualizar Vagas - ParkIn</title>
-  <link rel="stylesheet" href="style.css?v=2">
-  <link rel="stylesheet" href="visualizar-vagas.css?v=2">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualizar Vagas - ParkIn</title>
+    <link rel="stylesheet" href="style.css?v=2">
+    <link rel="stylesheet" href="visualizar-vagas.css?v=2">
 </head>
 <body>
 
-  <div class="header estacionamento-header">
+<div class="header estacionamento-header">
     <button class="voltar" onclick="window.location.href='estacionamento.html'">← Voltar</button>
     <img src="imagem/puc.png" alt="Logo PUC" class="logo-header">
-  </div>
+</div>
 
-  <div class="parking-container">
+<div class="parking-container">
     <h1 class="parking-title">Status do Estacionamento</h1>
 
     <div id="loading" class="loading">
-      Carregando informações das vagas...
+        Carregando informações das vagas...
     </div>
 
     <div id="error" class="error" style="display: none;">
-      Erro ao carregar dados. Verifique se o backend está rodando.
+        Erro ao carregar dados. Verifique se o backend está rodando.
     </div>
 
     <div id="parking-content" style="display: none;">
-      <div class="parking-info">
-        <div class="info-card">
-          <h3 id="total-spots">0</h3>
-          <p>Total de Vagas</p>
+        <div class="parking-info">
+            <div class="info-card">
+                <h3 id="total-spots">0</h3>
+                <p>Total de Vagas</p>
+            </div>
+            <div class="info-card">
+                <h3 id="free-spots">0</h3>
+                <p>Vagas Livres</p>
+            </div>
+            <div class="info-card">
+                <h3 id="occupied-spots">0</h3>
+                <p>Vagas Ocupadas</p>
+            </div>
+            <div class="info-card">
+                <h3 id="occupancy-rate">0%</h3>
+                <p>Taxa de Ocupação</p>
+            </div>
         </div>
-        <div class="info-card">
-          <h3 id="free-spots">0</h3>
-          <p>Vagas Livres</p>
-        </div>
-        <div class="info-card">
-          <h3 id="occupied-spots">0</h3>
-          <p>Vagas Ocupadas</p>
-        </div>
-        <div class="info-card">
-          <h3 id="occupancy-rate">0%</h3>
-          <p>Taxa de Ocupação</p>
-        </div>
-      </div>
 
-      <div id="parking-image-container" class="parking-image-container">
-        <img id="parking-image" class="parking-image" src="" alt="Imagem do Estacionamento" style="display: none;">
-        <div id="parking-overlay" class="parking-overlay">
-          <!-- Vagas serão sobrepostas aqui -->
+        <div id="parking-map-background" class="parking-map-background" style="display: none;">
         </div>
-      </div>
 
-        <div id="parking-layout-container" class="parking-layout-container" style="display: none;">
-        <!-- Grid alternativo caso não haja imagem -->
-      </div>
-
-      <div class="legend">
-        <div class="legend-item">
-          <div class="legend-color free"></div>
-          <span style="color: #fff;">Vaga Livre</span>
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color free"></div>
+                <span style="color: #fff;">Vaga Livre</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color occupied"></div>
+                <span style="color: #fff;">Vaga Ocupada</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color unknown"></div>
+                <span style="color: #fff;">Status Desconhecido</span>
+            </div>
         </div>
-        <div class="legend-item">
-          <div class="legend-color occupied"></div>
-          <span style="color: #fff;">Vaga Ocupada</span>
-        </div>
-        <div class="legend-item">
-          <div class="legend-color unknown"></div>
-          <span style="color: #fff;">Status Desconhecido</span>
-        </div>
-      </div>
 
-      <button class="refresh-btn" onclick="loadParkingData()">
-        Atualizar Status
-      </button>
+        <button class="refresh-btn" onclick="loadParkingData()">
+            Atualizar Status
+        </button>
 
-      <div id="last-updated" class="last-updated">
-        <!-- Última atualização será mostrada aqui -->
-      </div>
+        <div id="last-updated" class="last-updated">
+        </div>
     </div>
-  </div>
+</div>
 
-  <footer class="rodape">
+<footer class="rodape">
     <p>v0.0.0.1</p>
-  </footer>
+</footer>
 
-  <script>
-      const API_BASE_URL = 'http://localhost:5001';
+<script>
+    const API_BASE_URL = 'http://localhost:5001';
 
-      function getParkingIdFromURL() {
-        const urlParams = new URLSearchParams(window.location.search);
-        return urlParams.get('parking_id') || localStorage.getItem('current_parking_id');
-      }
+    function getParkingIdFromURL() {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get('parking_id') || localStorage.getItem('current_parking_id');
+    }
 
-      async function loadParkingData() {
-        const loadingEl = document.getElementById('loading');
-        const errorEl = document.getElementById('error');
-        const contentEl = document.getElementById('parking-content');
+    async function loadParkingData() {
+      const loadingEl = document.getElementById('loading');
+      const errorEl = document.getElementById('error');
+      const contentEl = document.getElementById('parking-content');
+      const mapContainer = document.getElementById('parking-map-background');
 
-        document.getElementById('parking-image-container').style.display = 'none';
-        document.getElementById('parking-layout-container').style.display = 'none';
+      loadingEl.style.display = 'block';
+      errorEl.style.display = 'none';
+      contentEl.style.display = 'none';
+      mapContainer.style.display = 'none'; // Esconde o mapa
 
-        loadingEl.style.display = 'block';
-        errorEl.style.display = 'none';
-        contentEl.style.display = 'none';
+      const parkingId = getParkingIdFromURL();
 
-        const parkingId = getParkingIdFromURL();
+      try {
+        const apiUrl = `${API_BASE_URL}/api/parking/status?parking_id=${parkingId}`;
+        const response = await fetch(apiUrl);
+        if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
 
-        try {
-          const apiUrl = `${API_BASE_URL}/api/parking/status?parking_id=${parkingId}`;
-          const response = await fetch(apiUrl);
-          if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
+        const data = await response.json();
+        console.log('Dados recebidos (com layout DINÂMICO):', data);
 
-          const data = await response.json();
-          console.log('Dados recebidos (com layout DINÂMICO):', data);
+        if (!data.success) throw new Error(data.message || 'Erro ao carregar dados');
 
-          if (!data.success) throw new Error(data.message || 'Erro ao carregar dados');
+        const lastDetection = data.last_detection;
+        const layoutGroups = data.layout_groups;
 
-          const lastDetection = data.last_detection;
+        if (lastDetection && layoutGroups && layoutGroups.length > 0) {
+          // Atualizar os cards de estatísticas
+          document.getElementById('total-spots').textContent = lastDetection.total_slots || 0;
+          document.getElementById('free-spots').textContent = lastDetection.empty || 0;
+          document.getElementById('occupied-spots').textContent = lastDetection.occupied || 0;
+          document.getElementById('occupancy-rate').textContent =
+            lastDetection.occupancy_rate ? `${Math.round(lastDetection.occupancy_rate)}%` : '0%';
 
-          const layoutGroups = data.layout_groups;
-
-          if (lastDetection) {
-            document.getElementById('total-spots').textContent = lastDetection.total_slots || 0;
-            document.getElementById('free-spots').textContent = lastDetection.empty || 0;
-            document.getElementById('occupied-spots').textContent = lastDetection.occupied || 0;
-            document.getElementById('occupancy-rate').textContent =
-              lastDetection.occupancy_rate ? `${Math.round(lastDetection.occupancy_rate)}%` : '0%';
-
-            if (lastDetection.timestamp) {
-              const date = new Date(lastDetection.timestamp);
-              document.getElementById('last-updated').textContent =
-                `Última atualização: ${date.toLocaleString('pt-BR')}`;
-            }
-
-            if (layoutGroups && layoutGroups.length > 0) {
-              console.log(`Usando layout dinâmico de ${layoutGroups.length} fileiras.`);
-              renderSlotLayout(layoutGroups);
-              document.getElementById('parking-layout-container').style.display = 'flex';
-            } else {
-              console.warn("Backend não enviou layout. Usando grid automático (fallback).");
-              renderSlotGridFallback(lastDetection.slots);
-              document.getElementById('parking-layout-container').style.display = 'grid';
-            }
-
-          } else {
-            throw new Error('Nenhuma detecção disponível para esta área. Execute uma detecção primeiro.');
+          if (lastDetection.timestamp) {
+            const date = new Date(lastDetection.timestamp);
+            document.getElementById('last-updated').textContent =
+              `Última atualização: ${date.toLocaleString('pt-BR')}`;
           }
 
-          loadingEl.style.display = 'none';
-          contentEl.style.display = 'block';
+          // Chamar a função de renderizar, passando o layout da API
+          renderSlotLayout(layoutGroups);
+          mapContainer.style.display = 'flex'; // Mostra o mapa
 
-        } catch (error) {
-          console.error('Erro ao carregar dados:', error);
-          showError(error.message);
+        } else {
+          let errorMsg = 'Nenhuma detecção disponível para esta área.';
+          if (!layoutGroups || layoutGroups.length === 0) {
+            errorMsg = 'Erro ao gerar layout dinâmico. Verifique o backend.';
+          }
+          throw new Error(errorMsg);
         }
+
+        loadingEl.style.display = 'none';
+        contentEl.style.display = 'block';
+
+      } catch (error) {
+        console.error('Erro ao carregar dados:', error);
+        showError(error.message);
       }
+    }
 
-      function renderSlotLayout(layoutGroups) {
-        const layoutContainer = document.getElementById('parking-layout-container');
-        layoutContainer.innerHTML = '';
+    /**
+     * FUNÇÃO ATUALIZADA: Renderiza dinamicamente E verifica a orientação
+     */
+    function renderSlotLayout(layoutGroups) {
+      const layoutContainer = document.getElementById('parking-map-background');
+      layoutContainer.innerHTML = '';
 
-        if (!layoutGroups) return;
+      if (!layoutGroups) return;
 
-        layoutGroups.forEach(aisle => {
-          const aisleDiv = document.createElement('div');
-          aisleDiv.className = 'parking-aisle';
+      console.log(`Renderizando ${layoutGroups.length} fileiras dinâmicas...`);
 
-          aisle.forEach(slot => {
-            const box = document.createElement('div');
-            box.className = 'parking-spot';
+      // A 'aisle' é a fileira (coluna), o 'index' é o número dela (0 a 6)
+      layoutGroups.forEach((aisle, index) => {
 
-            const statusClass = slot.status === 'occupied' ? 'occupied' : 'free';
-            box.classList.add(statusClass);
-            box.textContent = slot.id;
+        const aisleDiv = document.createElement('div');
+        aisleDiv.className = 'parking-aisle';
 
-            aisleDiv.appendChild(box);
-          });
-          layoutContainer.appendChild(aisleDiv);
-        });
-      }
-
-      function renderSlotGridFallback(slots) {
-        const grid = document.getElementById('parking-layout-container');
-        grid.innerHTML = '';
-        if (!slots) return;
-        slots.forEach(slot => {
+        aisle.forEach(slot => {
           const box = document.createElement('div');
-          box.className = 'parking-spot';
+          box.className = 'spot-box'; // Padrão é HORIZONTAL
+
+          // Lógica para a fileira do meio ser vertical
+          // (Assumindo 7 fileiras, a do meio é a de índice 3)
+          if (layoutGroups.length === 7 && index === 3) {
+              box.classList.add('vertical');
+          }
+
           const statusClass = slot.status === 'occupied' ? 'occupied' : 'free';
           box.classList.add(statusClass);
           box.textContent = slot.id;
-          grid.appendChild(box);
+
+          aisleDiv.appendChild(box);
         });
-      }
 
-      function showError(message) {
-        const loadingEl = document.getElementById('loading');
-        const errorEl = document.getElementById('error');
-        loadingEl.style.display = 'none';
-        errorEl.style.display = 'block';
-        errorEl.textContent = `⚠️ ${message}`;
-      }
+        layoutContainer.appendChild(aisleDiv);
 
-      document.addEventListener('DOMContentLoaded', () => {
-        loadParkingData();
-        setInterval(loadParkingData, 5000);  // Atualiza a cada 5 segundos
+        // Adicionar corredor
+        if (index < layoutGroups.length - 1) { // 7 fileiras = 6 corredores (índices 0 a 5)
+          const laneDiv = document.createElement('div');
+          laneDiv.className = 'aisle-lane'; // Padrão (agora com textura)
+
+          // --- LÓGICA DO "MATO" REMOVIDA ---
+
+          // O corredor central (com o PARE) é o de índice 3
+          if (layoutGroups.length === 7 && index === 3) {
+             laneDiv.classList.add('central'); // Fica mais largo
+             laneDiv.innerHTML = `<span class="map-text text-pare">PARE</span>
+                                  <span class="map-text text-devagar">DEVAGAR</span>`;
+          }
+
+          layoutContainer.appendChild(laneDiv);
+        }
       });
-  </script>
+    }
 
+    function renderSlotGridFallback(slots) {
+      const grid = document.getElementById('parking-map-background');
+      grid.innerHTML = '';
+      if (!slots) return;
+      slots.forEach(slot => {
+        const box = document.createElement('div');
+        box.className = 'spot-box';
+        const statusClass = slot.status === 'occupied' ? 'occupied' : 'free';
+        box.classList.add(statusClass);
+        box.textContent = slot.id;
+        grid.appendChild(box);
+      });
+    }
+
+    function showError(message) {
+      const loadingEl = document.getElementById('loading');
+      const errorEl = document.getElementById('error');
+      loadingEl.style.display = 'none';
+      errorEl.style.display = 'block';
+      errorEl.textContent = `⚠️ ${message}`;
+    }
+
+    // Carregar dados quando a página carregar
+    document.addEventListener('DOMContentLoaded', () => {
+      loadParkingData();
+      setInterval(loadParkingData, 5000); // Atualiza a cada 5 segundos
+    });
+</script>
 </body>
 </html>

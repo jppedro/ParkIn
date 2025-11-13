@@ -5,101 +5,113 @@ body {
   color: #fff;
 }
 
-/* Topo */
+/* =========================================== */
+/* === INÍCIO DAS CORREÇÕES (HEADER) === */
+/* =========================================== */
+
+/* Topo (CORRIGIDO COM FLEXBOX) */
 .header {
   background-color: #002f87;
   padding: 20px;
   border-bottom-left-radius: 20px;
   border-bottom-right-radius: 20px;
   position: relative;
-  /* Mudanças para usar Flexbox e alinhar itens nas laterais */
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: space-between; /* Isso alinha os 3 itens */
 }
 
-/* Esconde as regras de imagem antigas que conflitam com o flexbox */
-/*
-.header img {
-  width: 100px;
-  position: absolute;
-  right: 20px;
-  top: 20px;
-}
-*/
-
-.header h2 {
-  margin: 10px 0 0;
-  font-size: 22px;
-}
-
-.header p {
-  font-size: 14px;
-  color: #ccc;
-}
-
-/* Centraliza título + subtítulo na página inicial */
-.titulo-pagina-inicial {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  text-align: center;
-}
-
-.titulo-pagina-inicial h2 {
-  margin: 0;
-  font-size: 22px;
-  color: #fff;
-}
-
-.titulo-pagina-inicial .subtexto-header {
-  margin: 5px 0 0;
-  font-size: 14px;
-  color: #ccc;
-  position: static;
-}
-
-
-/* Estilo para o botão Logout */
+/* Botão "Logout" (ou Voltar) */
 .header .voltar {
   background: none;
   border: none;
   color: #fff;
   font-size: 16px;
   cursor: pointer;
-  z-index: 10; /* Garante que o botão esteja acima do título centralizado */
+  flex-shrink: 0; /* Impede que o botão encolha */
+  min-width: 80px; /* Dá um espaço mínimo */
+  text-align: left;
+  z-index: 10;
 }
 
+/* Título Centralizado */
+.titulo-pagina-inicial {
+  /* Removemos o position: absolute */
+  flex-grow: 1; /* Faz o título ocupar o espaço do meio */
+  text-align: center;
+  padding: 0 10px; /* Evita que o texto cole nos botões */
+}
 
-/* Grid de opções */
+/* ===== MUDANÇA AQUI (Estilo do Título) ===== */
+.titulo-pagina-inicial h2 {
+  margin: 0;
+  font-size: 1.8em; /* Mais Hierarquia */
+  color: #fff;
+  font-weight: 600; /* Um pouco mais forte */
+}
+
+/* ===== MUDANÇA AQUI (Estilo do Subtítulo) ===== */
+.titulo-pagina-inicial .subtexto-header {
+  margin: 5px 0 0;
+  font-size: 1.0em; /* Um pouco maior */
+  color: #a0b9e0; /* Um azul/cinza mais suave e 'premium' */
+  position: static;
+  font-weight: 300;
+}
+
+/* Logo da PUC (já estava no .estacionamento-header, agora é global) */
+.logo-header {
+  width: 80px;
+  height: auto;
+  flex-shrink: 0; /* Impede que o logo encolha */
+}
+
+/* =========================================== */
+/* === FIM DAS CORREÇÕES (HEADER) === */
+/* =========================================== */
+
+
+/* =========================================== */
+/* === INÍCIO DAS CORREÇÕES (GRID) === */
+/* =========================================== */
+
+/* Grid de opções (CORRIGIDO PARA 3 COLUNAS) */
 .grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+  /* 3 colunas de tamanho igual */
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
   padding: 20px;
-  justify-content: center;
-  justify-items: center;
+  /* Define uma largura máxima para o grid não ficar gigante */
+  max-width: 700px;
+  margin: 40px auto 0 auto; /* Descola do header e centraliza */
 }
 
+/* Card padrão (secundário) */
 .card {
   background-color: #1f1f1f;
   border-radius: 12px;
-  width: 140px;
-  height: 140px;
+  /* width: 140px; (Removido - Deixe o grid controlar) */
+  height: 150px; /* Um pouco mais altos e "premium" */
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  transition: transform 0.2s;
+  transition: all 0.2s ease-in-out;
+  border: 1px solid #2a2a2a; /* Contorno subtil */
+  padding: 10px;
+  box-sizing: border-box;
 }
 
 .card:hover {
   transform: scale(1.05);
   cursor: pointer;
+  background-color: #252525;
+  border-color: #444;
 }
 
 .card img {
-  width: 50px;
+  width: 45px; /* Ícones um pouco maiores */
   margin-bottom: 10px;
 }
 
@@ -111,42 +123,42 @@ body {
   word-wrap: break-word;
 }
 
+/* =========================================== */
+/* === FIM DAS CORREÇÕES (GRID) === */
+/* =========================================== */
+
+
 /* Responsividade */
 
 /* Tablets */
-@media (max-width: 480px) {
+@media (max-width: 768px) {
   .grid {
+    /* 2 colunas para tablets */
     grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
+    max-width: 500px;
   }
-
-  .card {
-    width: 120px;
-    height: 120px;
-  }
-
-  /* Ajuste para cabeçalho da página inicial (removido h2 e p que já estão em .titulo-pagina-inicial) */
 }
+
 
 /* Celulares */
 @media (max-width: 480px) {
   .grid {
+    /* 2 colunas para celulares */
     grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
+    gap: 15px; /* Espaço um pouco menor */
   }
 
   .card {
-    width: 110px;
-    height: 110px;
+    height: 130px; /* Altura ajustada para celular */
     padding: 10px;
   }
 
   .card img {
-    width: 35px;
+    width: 40px;
   }
 
   .card p {
-    font-size: 12px;
+    font-size: 13px;
   }
 
   .header img {
@@ -196,23 +208,7 @@ body {
   cursor: pointer;
 }
 
-.logo-header {
-  width: 80px;
-}
-
-
-.estacionamento-header .voltar {
-  background: none;
-  border: none;
-  color: #fff;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-.logo-header {
-  width: 80px;
-}
-
+/* Imagem estática (removida do HTML) */
 .estacionamento-imagem {
   display: flex;
   justify-content: center;
@@ -220,10 +216,30 @@ body {
 }
 
 .estacionamento-imagem img {
-  width: 590px; 
+  width: 590px;
   height: auto;
 }
 
+/* Estilo para o título da página */
+.container-titulo {
+  text-align: center;
+  margin-top: 40px; /* Margem SUPERIOR (descola do header) */
+  margin-bottom: 20px; /* Margem INFERIOR (dá espaço para os cards) */
+  padding: 0 20px; /* Evita que o texto cole nas laterais em telas pequenas */
+}
+
+.container-titulo h1 {
+  margin: 0;
+  font-size: 2.2em; /* Tamanho maior para hierarquia */
+  font-weight: 600;
+  color: #E0E0E0; /* Branco um pouco mais suave */
+}
+
+.container-titulo p {
+  margin: 10px 0 0;
+  font-size: 1.1em;
+  color: #9E9E9E; /* Cinzento para o subtítulo */
+}
 
 .estacionamento-lista {
   display: flex;
@@ -231,10 +247,15 @@ body {
   align-items: center;
   gap: 15px;
   padding: 0 20px;
+  margin-bottom: 40px; /* Adiciona margem inferior para "descolar" do rodapé */
 }
 
+/* =========================================== */
+/* === ESTILOS .VAGA-CARD (COM BLUR) === */
+/* =========================================== */
+
 .vaga-card {
-  background-color: #2b2b2b;
+  background-color: #2b2b2b; /* Cor de fallback se a imagem falhar */
   border-radius: 16px;
   padding: 30px 40px;
   display: flex;
@@ -247,12 +268,75 @@ body {
   transition: transform 0.2s, box-shadow 0.2s;
   cursor: pointer;
   gap: 15px;
+
+  /* --- Propriedades para o blur/overlay --- */
+  position: relative;
+  z-index: 1;
+  overflow: hidden; /* Importante para o blur */
 }
 
-.vaga-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0px 4px 12px rgba(0,0,0,0.5);
+/* Camada 1: Imagem de Fundo (Borrada) */
+.vaga-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+
+  /* 1. Camada da Imagem (lê a variável do JS) */
+  background-image: var(--bg-image);
+  background-size: cover;
+  background-position: center;
+
+  /* 2. Camada do Blur (o que você pediu) */
+  filter: blur(4px) brightness(0.7); /* Adiciona o blur E escurece */
+
+  /* 3. Garante que ela não fique por cima do texto */
+  z-index: 1;
+
+  /* Ajuste para o blur não "vazar" das bordas */
+  transform: scale(1.1);
+  transition: filter 0.3s; /* Transição suave para o hover */
 }
+
+/* Camada 2: Overlay Escuro (Gradiente) */
+.vaga-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  /* Gradiente escuro (overlay) */
+  background: linear-gradient(to top, rgba(0,0,0,0.9) 10%, rgba(0,0,0,0.3) 70%);
+  z-index: 2; /* Fica entre a imagem (1) e o texto (3) */
+  transition: background 0.3s;
+}
+
+/* Camada 3: Texto (Nítido) */
+.vaga-card > * {
+  position: relative;
+  z-index: 3; /* z-index 3 (Texto) fica por cima do overlay (2) e da imagem (1) */
+
+  /* Sombra para legibilidade */
+  text-shadow: 0px 1px 4px rgba(0, 0, 0, 0.9);
+}
+
+/* Efeito de hover */
+.vaga-card:hover::before {
+  /* Remove o escurecimento do brightness no hover */
+  filter: blur(4px) brightness(1.0);
+}
+
+.vaga-card:hover::after {
+  background: linear-gradient(to top, rgba(0,0,0,0.7) 10%, rgba(0,0,0,0.1) 60%);
+}
+
+/* =========================================== */
+/* === FIM DOS ESTILOS .VAGA-CARD === */
+/* =========================================== */
+
 
 .card-header {
   display: flex;
@@ -345,8 +429,8 @@ body {
 /* Rodapé */
 .rodape {
   text-align: center;
-  margin: 30px 0;
-  color: #888;
+  padding: 20px 0 40px 0; /* 20px em cima, 40px em baixo */
+  color: #616161; /* Um cinzento ainda mais subtil */
   font-size: 12px;
 }
 

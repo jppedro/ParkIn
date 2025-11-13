@@ -1,7 +1,126 @@
-/* Estilos específicos para a página de visualização de vagas */
+/* =========================================== */
+/* === INÍCIO DOS NOVOS ESTILOS DO MAPA === */
+/* =========================================== */
+
+/* O fundo (A "ESTRADA") */
+.parking-map-background {
+  background-color: #2e3338; /* Cor de asfalto */
+  border-radius: 16px;
+  padding: 25px;
+  margin: 20px auto;
+  max-width: 90%;
+  width: fit-content;
+
+  display: flex;
+  justify-content: center;
+  gap: 10px; /* Espaço entre fileiras e corredores */
+
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+/* Cada fileira (coluna de vagas) */
+.parking-aisle {
+  display: flex;
+  flex-direction: column;
+  gap: 6px; /* Espaço entre as vagas (boxes) */
+  justify-content: space-between; /* Alinha as vagas */
+}
+
+/* O "corredor" (com a TEXTURA) */
+.aisle-lane {
+  width: 40px;
+  /* Cor de fallback (plano B) */
+  background-color: #3a3f44;
+  /* A IMAGEM DE TEXTURA QUE VOCÊ MANDOU */
+  background-image: url('imagem/textura_corredor.png');
+  background-size: cover;
+  background-position: center;
+
+  border-radius: 6px;
+  position: relative;
+}
+
+/* Corredor central (com "PARE") é um pouco mais claro */
+.aisle-lane.central {
+  width: 60px;
+}
+
+/* A classe .mato foi REMOVIDA */
+
+
+/* O texto "PARE" e "DEVAGAR" no corredor central */
+.map-text {
+  position: absolute;
+  color: rgba(255, 255, 255, 0.4);
+  font-weight: bold;
+  font-size: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  letter-spacing: 2px;
+}
+.text-pare {
+  top: 15px;
+}
+.text-devagar {
+  bottom: 15px;
+  transform: translateX(-50%) rotate(180deg); /* Inverte 'DEVAGAR' */
+}
+
+
+/* A VAGA (o "cardzinho") */
+.spot-box {
+  /* Estilo "H15" */
+  width: 90px;  /* Largura do retângulo */
+  height: 35px; /* Altura do retângulo */
+  border-radius: 4px;
+
+  /* Cores padrão (Vaga Desconhecida / 'unknown') */
+  background-color: #5a5a5a;
+  border: 1px solid #444;
+
+  /* Texto (número da vaga) */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.4);
+
+  transition: all 0.2s ease;
+}
+
+/* Cor da Vaga Ocupada */
+.spot-box.occupied {
+  background-color: #c92a2a; /* Vermelho mais forte */
+  border-color: #a62323;
+  color: #fff;
+}
+
+/* Cor da Vaga Livre */
+.spot-box.free {
+  background-color: #37b24d; /* Verde mais forte */
+  border-color: #2f9e44;
+  color: #fff;
+}
+
+/* Estilo para vagas verticais */
+.spot-box.vertical {
+  width: 35px;  /* Largura menor */
+  height: 90px; /* Altura maior */
+}
+
+/* =========================================== */
+/* === FIM DOS NOVOS ESTILOS DO MAPA === */
+/* =========================================== */
+
+
+/* (Estilos antigos que continuam úteis) */
 
 .parking-container {
-  max-width: 800px;
+  max-width: 1200px; /* Aumentar largura máxima */
   margin: 20px auto;
   padding: 20px;
   background-color: #1f1f1f;
@@ -43,109 +162,6 @@
   color: #ccc;
 }
 
-/* Container para imagem do estacionamento com overlay */
-.parking-image-container {
-  position: relative;
-  max-width: 800px;
-  margin: 0 auto;
-  border-radius: 8px;
-  overflow: hidden;
-  background-color: #333;
-}
-
-.parking-image {
-  width: 100%;
-  height: auto;
-  display: block;
-  border-radius: 8px;
-}
-
-.parking-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-}
-
-.parking-spot-overlay {
-  position: absolute;
-  border: 2px solid #fff;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 10px;
-  font-weight: bold;
-  color: #fff;
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
-  cursor: pointer;
-  transition: all 0.3s ease;
-  pointer-events: auto;
-  background-color: rgba(136, 136, 136, 0.7);
-  backdrop-filter: blur(1px);
-}
-
-.parking-spot-overlay.occupied {
-  background-color: rgba(255, 68, 68, 0.8);
-  border-color: #cc0000;
-}
-
-.parking-spot-overlay.free {
-  background-color: rgba(68, 255, 68, 0.8);
-  border-color: #00cc00;
-}
-
-.parking-spot-overlay:hover {
-  transform: scale(1.1);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.5);
-  z-index: 10;
-}
-
-/* Grid alternativo (fallback) */
-.parking-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
-  gap: 8px;
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 20px;
-  background-color: #333;
-  border-radius: 8px;
-}
-
-.parking-spot {
-  width: 40px;
-  height: 60px;
-  border: 2px solid #666;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 10px;
-  font-weight: bold;
-  color: #000;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  background-color: #888;
-}
-
-.parking-spot.occupied {
-  background-color: #ff4444;
-  border-color: #cc0000;
-}
-
-.parking-spot.free {
-  background-color: #44ff44;
-  border-color: #00cc00;
-}
-
-.parking-spot:hover {
-  transform: scale(1.1);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-}
-
 .legend {
   display: flex;
   justify-content: center;
@@ -168,17 +184,18 @@
 }
 
 .legend-color.free {
-  background-color: #44ff44;
-  border-color: #00cc00;
+  background-color: #37b24d; /* Cor da legenda atualizada */
+  border-color: #2f9e44;
 }
 
 .legend-color.occupied {
-  background-color: #ff4444;
-  border-color: #cc0000;
+  background-color: #c92a2a; /* Cor da legenda atualizada */
+  border-color: #a62323;
 }
 
 .legend-color.unknown {
-  background-color: #888;
+  background-color: #5a5a5a; /* Cor da legenda atualizada */
+  border-color: #444;
 }
 
 .loading {
@@ -220,99 +237,4 @@
   color: #888;
   font-size: 12px;
   margin-top: 15px;
-}
-
-.parking-layout-container {
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-  padding: 20px;
-  background-color: #333;
-  border-radius: 8px;
-  max-width: fit-content;
-  margin: 0 auto;
-  flex-wrap: wrap;
-}
-
-.parking-aisle {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-@media (max-width: 768px) {
-  .parking-container {
-    margin: 10px;
-    padding: 15px;
-  }
-  
-  .parking-grid {
-    grid-template-columns: repeat(8, 1fr);
-    max-width: 100%;
-  }
-  
-  .parking-spot {
-    width: 35px;
-    height: 50px;
-    font-size: 9px;
-  }
-  
-  .parking-info {
-    flex-direction: column;
-    align-items: center;
-  }
-  
-  .parking-title {
-    font-size: 20px;
-  }
-  
-  .info-card {
-    min-width: 100px;
-  }
-  
-  .legend {
-    gap: 20px;
-  }
-  
-  .refresh-btn {
-    padding: 10px 20px;
-    font-size: 14px;
-  }
-}
-
-/* Responsividade para telas muito pequenas */
-@media (max-width: 480px) {
-  .parking-grid {
-    grid-template-columns: repeat(6, 1fr);
-    padding: 15px;
-  }
-  
-  .parking-spot {
-    width: 30px;
-    height: 45px;
-    font-size: 8px;
-  }
-  
-  .parking-info {
-    gap: 10px;
-  }
-  
-  .info-card {
-    padding: 12px;
-    min-width: 90px;
-  }
-  
-  .info-card h3 {
-    font-size: 16px;
-  }
-  
-  .info-card p {
-    font-size: 12px;
-  }
-  
-  .legend {
-    flex-direction: column;
-    align-items: center;
-    gap: 15px;
-  }
 }
