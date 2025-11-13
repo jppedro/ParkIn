@@ -105,7 +105,7 @@ class MultiParkingRoutes:
                     'center_y': center_y
                 })
 
-            CLUSTER_THRESHOLD = 150
+            CLUSTER_THRESHOLD = 60
 
             if not full_slot_data:
                 return []
