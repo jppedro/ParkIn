@@ -1,7 +1,102 @@
-/* Estilos específicos para a página de visualização de vagas */
+
+.parking-map-background {
+  background-color: #2e3338;
+  border-radius: 16px;
+  padding: 25px;
+  margin: 20px auto;
+  max-width: 90%;
+  width: fit-content;
+
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+.parking-aisle {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  justify-content: space-between;
+}
+
+.aisle-lane {
+  width: 40px;
+  background-color: #3a3f44;
+  background-image: url('imagem/textura_corredor.png');
+  background-size: cover;
+  background-position: center;
+
+  border-radius: 6px;
+  position: relative;
+}
+
+.aisle-lane.central {
+  width: 60px;
+}
+
+
+.map-text {
+  position: absolute;
+  color: rgba(255, 255, 255, 0.4);
+  font-weight: bold;
+  font-size: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  letter-spacing: 2px;
+}
+.text-pare {
+  top: 15px;
+}
+.text-devagar {
+  bottom: 15px;
+  transform: translateX(-50%) rotate(180deg);
+}
+
+
+.spot-box {
+  width: 90px;
+  height: 35px;
+  border-radius: 4px;
+
+  background-color: #5a5a5a;
+  border: 1px solid #444;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.4);
+
+  transition: all 0.2s ease;
+}
+
+.spot-box.occupied {
+  background-color: #c92a2a;
+  border-color: #a62323;
+  color: #fff;
+}
+
+.spot-box.free {
+  background-color: #37b24d;
+  border-color: #2f9e44;
+  color: #fff;
+}
+
+.spot-box.vertical {
+  width: 35px;
+  height: 90px;
+}
+
+
 
 .parking-container {
-  max-width: 800px;
+  max-width: 1200px;
   margin: 20px auto;
   padding: 20px;
   background-color: #1f1f1f;
@@ -19,7 +114,7 @@
   display: flex;
   justify-content: space-around;
   margin-bottom: 30px;
-  flex-wrap: wrap; 
+  flex-wrap: wrap;
   gap: 15px;
 }
 
@@ -41,109 +136,6 @@
   margin: 5px 0 0;
   font-size: 14px;
   color: #ccc;
-}
-
-/* Container para imagem do estacionamento com overlay */
-.parking-image-container {
-  position: relative;
-  max-width: 800px;
-  margin: 0 auto;
-  border-radius: 8px;
-  overflow: hidden;
-  background-color: #333;
-}
-
-.parking-image {
-  width: 100%;
-  height: auto;
-  display: block;
-  border-radius: 8px;
-}
-
-.parking-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-}
-
-.parking-spot-overlay {
-  position: absolute;
-  border: 2px solid #fff;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 10px;
-  font-weight: bold;
-  color: #fff;
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
-  cursor: pointer;
-  transition: all 0.3s ease;
-  pointer-events: auto;
-  background-color: rgba(136, 136, 136, 0.7);
-  backdrop-filter: blur(1px);
-}
-
-.parking-spot-overlay.occupied {
-  background-color: rgba(255, 68, 68, 0.8);
-  border-color: #cc0000;
-}
-
-.parking-spot-overlay.free {
-  background-color: rgba(68, 255, 68, 0.8);
-  border-color: #00cc00;
-}
-
-.parking-spot-overlay:hover {
-  transform: scale(1.1);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.5);
-  z-index: 10;
-}
-
-/* Grid alternativo (fallback) */
-.parking-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
-  gap: 8px;
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 20px;
-  background-color: #333;
-  border-radius: 8px;
-}
-
-.parking-spot {
-  width: 40px;
-  height: 60px;
-  border: 2px solid #666;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 10px;
-  font-weight: bold;
-  color: #000;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  background-color: #888;
-}
-
-.parking-spot.occupied {
-  background-color: #ff4444;
-  border-color: #cc0000;
-}
-
-.parking-spot.free {
-  background-color: #44ff44;
-  border-color: #00cc00;
-}
-
-.parking-spot:hover {
-  transform: scale(1.1);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
 }
 
 .legend {
@@ -168,17 +160,18 @@
 }
 
 .legend-color.free {
-  background-color: #44ff44;
-  border-color: #00cc00;
+  background-color: #37b24d;
+  border-color: #2f9e44;
 }
 
 .legend-color.occupied {
-  background-color: #ff4444;
-  border-color: #cc0000;
+  background-color: #c92a2a;
+  border-color: #a62323;
 }
 
 .legend-color.unknown {
-  background-color: #888;
+  background-color: #5a5a5a;
+  border-color: #444;
 }
 
 .loading {
@@ -280,7 +273,6 @@
   }
 }
 
-/* Responsividade para telas muito pequenas */
 @media (max-width: 480px) {
   .parking-grid {
     grid-template-columns: repeat(6, 1fr);
@@ -323,25 +315,24 @@
     align-items: center;
     width: 100%;
     margin: 15px auto;
-    color: #fff; /* Texto branco */
+    color: #fff;
     font-weight: bold;
     font-size: 1.1em;
     text-align: center;
 }
 
 .direction-indicator p {
-    margin: 0 10px; /* Espaçamento entre texto e seta */
+    margin: 0 10px;
     padding: 5px;
     border-radius: 4px;
-    background-color: rgba(0, 0, 0, 0.4); /* Fundo sutil */
+    background-color: rgba(0, 0, 0, 0.4);
 }
 
-/* Estilo para as setas (símbolo Unicode) */
 .arrow-up, .arrow-down {
-    font-size: 2.5em; /* Seta grande */
+    font-size: 2.5em;
     line-height: 1;
-    color: #ffd700; /* Amarelo/Dourado para destaque */
-    animation: pulse 1.5s infinite; /* Efeito pulsante */
+    color: #ffd700;
+    animation: pulse 1.5s infinite;
 }
 
 .arrow-up {
@@ -352,18 +343,15 @@
     margin-top: 5px;
 }
 
-/* Entrada/Saída: Seta em cima, texto embaixo */
 .entry-exit {
     flex-direction: column;
 }
 
-/* Bolsão C: Seta embaixo, texto em cima */
 .bolhao-c {
     flex-direction: column-reverse;
 }
 
 
-/* Efeito de Pulso para as Setas */
 @keyframes pulse {
     0% { opacity: 0.6; transform: scale(1); }
     50% { opacity: 1; transform: scale(1.1); }

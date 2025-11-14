@@ -5,101 +5,89 @@ body {
   color: #fff;
 }
 
-/* Topo */
 .header {
   background-color: #002f87;
   padding: 20px;
   border-bottom-left-radius: 20px;
   border-bottom-right-radius: 20px;
   position: relative;
-  /* Mudanças para usar Flexbox e alinhar itens nas laterais */
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
-/* Esconde as regras de imagem antigas que conflitam com o flexbox */
-/*
-.header img {
-  width: 100px;
-  position: absolute;
-  right: 20px;
-  top: 20px;
-}
-*/
-
-.header h2 {
-  margin: 10px 0 0;
-  font-size: 22px;
-}
-
-.header p {
-  font-size: 14px;
-  color: #ccc;
-}
-
-/* Centraliza título + subtítulo na página inicial */
-.titulo-pagina-inicial {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  text-align: center;
-}
-
-.titulo-pagina-inicial h2 {
-  margin: 0;
-  font-size: 22px;
-  color: #fff;
-}
-
-.titulo-pagina-inicial .subtexto-header {
-  margin: 5px 0 0;
-  font-size: 14px;
-  color: #ccc;
-  position: static;
-}
-
-
-/* Estilo para o botão Logout */
 .header .voltar {
   background: none;
   border: none;
   color: #fff;
   font-size: 16px;
   cursor: pointer;
-  z-index: 10; /* Garante que o botão esteja acima do título centralizado */
+  flex-shrink: 0;
+  min-width: 80px;
+  text-align: left;
+  z-index: 10;
+}
+
+.titulo-pagina-inicial {
+  flex-grow: 1;
+  text-align: center;
+  padding: 0 10px;
+}
+
+.titulo-pagina-inicial h2 {
+  margin: 0;
+  font-size: 1.8em;
+  color: #fff;
+  font-weight: 600;
+}
+
+.titulo-pagina-inicial .subtexto-header {
+  margin: 5px 0 0;
+  font-size: 1.0em;
+  color: #a0b9e0;
+  position: static;
+  font-weight: 300;
+}
+
+.logo-header {
+  width: 80px;
+  height: auto;
+  flex-shrink: 0;
 }
 
 
-/* Grid de opções */
 .grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
   padding: 20px;
-  justify-content: center;
-  justify-items: center;
+  max-width: 700px;
+  margin: 40px auto 0 auto;
 }
 
 .card {
   background-color: #1f1f1f;
   border-radius: 12px;
-  width: 140px;
-  height: 140px;
+  height: 150px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  transition: transform 0.2s;
+  transition: all 0.2s ease-in-out;
+  border: 1px solid #2a2a2a;
+  padding: 10px;
+  box-sizing: border-box;
 }
 
 .card:hover {
   transform: scale(1.05);
   cursor: pointer;
+  background-color: #252525;
+  border-color: #444;
 }
 
 .card img {
-  width: 50px;
+  width: 45px;
   margin-bottom: 10px;
 }
 
@@ -111,42 +99,31 @@ body {
   word-wrap: break-word;
 }
 
-/* Responsividade */
-
-/* Tablets */
-@media (max-width: 480px) {
+@media (max-width: 768px) {
   .grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
+    max-width: 500px;
   }
-
-  .card {
-    width: 120px;
-    height: 120px;
-  }
-
-  /* Ajuste para cabeçalho da página inicial (removido h2 e p que já estão em .titulo-pagina-inicial) */
 }
 
-/* Celulares */
+
 @media (max-width: 480px) {
   .grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
+    gap: 15px;
   }
 
   .card {
-    width: 110px;
-    height: 110px;
+    height: 130px;
     padding: 10px;
   }
 
   .card img {
-    width: 35px;
+    width: 40px;
   }
 
   .card p {
-    font-size: 12px;
+    font-size: 13px;
   }
 
   .header img {
@@ -167,7 +144,6 @@ body {
   position: relative;
 }
 
-/* Centraliza título + subtítulo */
 .titulo-header {
   position: absolute;
   left: 50%;
@@ -187,30 +163,12 @@ body {
   color: #ccc;
 }
 
-/* Aplicando .voltar também ao .estacionamento-header, mas o .header .voltar já cobre a página inicial */
 .estacionamento-header .voltar {
   background: none;
   border: none;
   color: #fff;
   font-size: 16px;
   cursor: pointer;
-}
-
-.logo-header {
-  width: 80px;
-}
-
-
-.estacionamento-header .voltar {
-  background: none;
-  border: none;
-  color: #fff;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-.logo-header {
-  width: 80px;
 }
 
 .estacionamento-imagem {
@@ -220,10 +178,29 @@ body {
 }
 
 .estacionamento-imagem img {
-  width: 590px; 
+  width: 590px;
   height: auto;
 }
 
+.container-titulo {
+  text-align: center;
+  margin-top: 40px;
+  margin-bottom: 20px;
+  padding: 0 20px;
+}
+
+.container-titulo h1 {
+  margin: 0;
+  font-size: 2.2em;
+  font-weight: 600;
+  color: #E0E0E0;
+}
+
+.container-titulo p {
+  margin: 10px 0 0;
+  font-size: 1.1em;
+  color: #9E9E9E;
+}
 
 .estacionamento-lista {
   display: flex;
@@ -231,6 +208,7 @@ body {
   align-items: center;
   gap: 15px;
   padding: 0 20px;
+  margin-bottom: 40px;
 }
 
 .vaga-card {
@@ -247,11 +225,57 @@ body {
   transition: transform 0.2s, box-shadow 0.2s;
   cursor: pointer;
   gap: 15px;
+
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
 }
 
-.vaga-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0px 4px 12px rgba(0,0,0,0.5);
+.vaga-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+
+  background-image: var(--bg-image);
+  background-size: cover;
+  background-position: center;
+
+  filter: blur(4px) brightness(0.7);
+
+  z-index: 1;
+
+  transform: scale(1.1);
+  transition: filter 0.3s;
+}
+
+.vaga-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to top, rgba(0,0,0,0.9) 10%, rgba(0,0,0,0.3) 70%);
+  z-index: 2;
+  transition: background 0.3s;
+}
+
+.vaga-card > * {
+  position: relative;
+  z-index: 3;
+
+  text-shadow: 0px 1px 4px rgba(0, 0, 0, 0.9);
+}
+
+.vaga-card:hover::before {
+  filter: blur(4px) brightness(1.0);
+}
+
+.vaga-card:hover::after {
+  background: linear-gradient(to top, rgba(0,0,0,0.7) 10%, rgba(0,0,0,0.1) 60%);
 }
 
 .card-header {
@@ -342,18 +366,14 @@ body {
   background: #1976D2;
 }
 
-/* Rodapé */
 .rodape {
   text-align: center;
-  margin: 30px 0;
-  color: #888;
+  padding: 20px 0 40px 0;
+  color: #616161;
   font-size: 12px;
 }
 
 
-/* ======================== */
-/* LOGIN PAGE          */
-/* ======================== */
 .login-container {
   display: flex;
   flex-direction: column;
@@ -409,9 +429,7 @@ body {
   margin-top: 15px;
 }
 
-/* ======================== */
-/* ADMIN PAGE          */
-/* ======================== */
+
 .admin-container {
   text-align: center;
   padding: 20px;
@@ -443,9 +461,7 @@ body {
   transform: scale(1.05);
 }
 
-/* ======================== */
-/* REGIÃO PAGE         */
-/* ======================== */
+
 .regiao-container {
   display: flex;
   justify-content: center;
@@ -465,7 +481,6 @@ body {
   font-size: 16px;
 }
 
-/* Responsividade */
 @media (max-width: 600px) {
   .regiao-imagem {
     height: 250px;
@@ -481,39 +496,31 @@ body {
   }
 }
 
-/* ======================== */
-/* AJUSTES SOLICITADOS (Inputs Brancos / Botão Preto Animado) */
-/* ======================== */
 
-/* 1. ESTILO DOS CAMPOS DE INPUT (Usuário e Senha) */
 .login-form input {
-    /* Fundo Branco e Texto Preto */
-    background-color: white; /* Fundo branco para os inputs */
-    color: #121212; /* Texto preto para digitar */
-    border: 1px solid #ccc; /* Borda cinza clara para definir */
-    padding: 12px; /* Aumenta um pouco o padding para melhor toque */
+    background-color: white;
+    color: #121212;
+    border: 1px solid #ccc;
+    padding: 12px;
 }
 
 .login-form input::placeholder {
-    color: #666; /* Placeholder cinza escuro */
+    color: #666;
 }
 
-/* 2. ESTILO DO BOTÃO (Entrar) */
 .login-form button {
-    /* Fundo Preto e Texto Branco */
-    background-color: #121212; /* Fundo preto */
-    color: white; /* Texto branco */
-    border: 2px solid #121212; /* Borda preta */
+    background-color: #121212;
+    color: white;
+    border: 2px solid #121212;
     padding: 12px;
     font-weight: bold;
-    /* Adiciona transição para a animação ser suave */
     transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
 .login-form button:hover {
-    background-color:rgba(220, 210, 210, 0.923); ; /* Cor de fundo Azul PUC no hover */
-    border-color: rgba(220, 210, 210, 0.923); /* Borda Azul PUC no hover */
-    color: white; /* Texto se mantém branco */
+    background-color:rgba(220, 210, 210, 0.923);
+    border-color: rgba(220, 210, 210, 0.923);
+    color: white;
 }
 
 .login-container {

@@ -25,15 +25,9 @@ class ParkingManager:
         Args:
             data_folder: Pasta onde ficam os dados de cada parking_id
         """
-        # Usar caminho absoluto baseado na localização deste arquivo
-        # services/parking_manager.py está em: backend/ai-management/services/
-        # Precisamos ir para: backend/ai-management/parking_data/
-        
-        # Pegar o diretório deste arquivo (services/)
+
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        # Subir para ai-management/
         ai_management_dir = os.path.dirname(current_dir)
-        # Adicionar parking_data/
         self.data_folder = os.path.join(ai_management_dir, data_folder)
         self.index_file = os.path.join(self.data_folder, "parking_index.json")
         

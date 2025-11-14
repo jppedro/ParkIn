@@ -19,7 +19,6 @@ class ParkingAPI:
         Config.init_folders()
             
     def _register_routes(self):
-        # Health check endpoint
         @self.app.route('/', methods=['GET'])
         def health_check():
             from flask import jsonify
@@ -30,7 +29,6 @@ class ParkingAPI:
                 'version': '2.0.0 - Multi-Parking API'
             })
         
-        # Registrar rotas multi-parking
         from routes.multi_parking_routes import multi_parking_bp
         self.app.register_blueprint(multi_parking_bp, url_prefix='/api/parking')
         
@@ -54,7 +52,8 @@ class ParkingAPI:
         print("\n🚗 ENDPOINTS MULTI-PARKING API:")
         print("   POST   /api/parking/setup         - Criar nova área de estacionamento")
         print("   POST   /api/parking/define-slots  - Definir vagas de uma área (via JSON)")
-        print("   POST   /api/parking/detect        - Detectar ocupação em uma área")
+        print("   POST   /api/parking/detect        - Detectar ocupação em uma área (imagem)")
+        print("   POST   /api/parking/detect-video  - Detectar ocupação em vídeo (atualiza a cada 10s)")
         print("   GET    /api/parking/status        - Status de uma área específica")
         print("   GET    /api/parking/list          - Listar todas as áreas")
         print("   DELETE /api/parking/delete        - Remover uma área")

@@ -1,4 +1,3 @@
-// Função de login
 function login() {
   const username = document.getElementById("username").value.trim();
   const password = document.getElementById("password").value.trim();
@@ -14,13 +13,11 @@ function login() {
   }
 }
 
-// Função de logout
 function logout() {
   localStorage.removeItem("userRole");
   window.location.href = "login.html";
 }
 
-// Verifica se o usuário tem permissão para acessar a página
 document.addEventListener("DOMContentLoaded", () => {
   const path = window.location.pathname;
   const role = localStorage.getItem("userRole");
@@ -40,7 +37,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-// Navegar para uma região
 function abrirRegiao(setor) {
   window.location.href = `regiao.html?setor=${setor}`;
 }
