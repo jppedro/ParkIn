@@ -63,12 +63,19 @@
             </div>
         </div>
 
-        <button class="refresh-btn" onclick="loadParkingData()">
-            Atualizar Status
-        </button>
-
         <div id="last-updated" class="last-updated">
         </div>
+
+        <!-- Status da detecção automática -->
+        <div class="video-status-bar" style="margin-top: 20px; padding: 15px; background: #2b2b2b; border-radius: 12px; text-align: center;">
+            <div id="video-status" style="color: #4CAF50; font-weight: bold; font-size: 16px;">
+                🔴 Aguardando conexão...
+            </div>
+        </div>
+
+        <!-- Vídeo oculto para extração de frames -->
+        <video id="parking-video" style="display: none;" crossorigin="anonymous" muted loop></video>
+        <canvas id="frame-canvas" style="display: none;"></canvas>
     </div>
 </div>
 
@@ -78,6 +85,12 @@
 
 <script>
     const API_BASE_URL = 'http://localhost:5001';
+    
+    let videoElement = null;
+    let canvasElement = null;
+    let videoProcessingInterval = null;
+    let isProcessingVideo = false;
+    const FRAME_INTERVAL_SECONDS = 5; // Intervalo fixo de detecção 
 
     function getParkingIdFromURL() {
       const urlParams = new URLSearchParams(window.location.search);
@@ -213,9 +226,191 @@
       errorEl.textContent = `⚠️ ${message}`;
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
-      loadParkingData();
-      setInterval(loadParkingData, 5000);
+    // ========== FUNÇÕES DE PROCESSAMENTO DE VÍDEO ==========
+    
+    async function startVideoDetection() {
+      const parkingId = getParkingIdFromURL();
+      if (!parkingId) {
+        console.error('ID da área não encontrado');
+        updateVideoStatus('Erro: ID da área não encontrado');
+        return;
+      }
+
+      if (isProcessingVideo) {
+        console.log('Processamento já está em andamento');
+        return;
+      }
+
+      try {
+        updateVideoStatus('Conectando à câmera...');
+
+        // Inicializar elementos
+        videoElement = document.getElementById('parking-video');
+        canvasElement = document.getElementById('frame-canvas');
+
+        // Carregar vídeo
+        const videoUrl = `${API_BASE_URL}/api/parking/video/${parkingId}`;
+        console.log('Carregando vídeo:', videoUrl);
+        
+        videoElement.src = videoUrl;
+        videoElement.load();
+
+        // Aguardar vídeo carregar
+        await new Promise((resolve, reject) => {
+          videoElement.onloadedmetadata = resolve;
+          videoElement.onerror = () => reject(new Error('Erro ao carregar vídeo'));
+        });
+
+        console.log('Vídeo carregado:', {
+          duration: videoElement.duration,
+          width: videoElement.videoWidth,
+          height: videoElement.videoHeight
+        });
+
+        // Canvas será redimensionado para 1280x720 em cada frame
+        // (não precisa configurar aqui)
+
+        // Iniciar reprodução (loop automático via atributo HTML)
+        await videoElement.play();
+        isProcessingVideo = true;
+
+        updateVideoStatus('🟢 Câmera ativa - Monitoramento contínuo');
+
+        // Processar primeiro frame imediatamente
+        await processCurrentFrame();
+
+        // Configurar intervalo de processamento
+        videoProcessingInterval = setInterval(async () => {
+          if (isProcessingVideo) {
+            await processCurrentFrame();
+          }
+        }, FRAME_INTERVAL_SECONDS * 1000);
+
+        console.log(`✅ Detecção automática iniciada (intervalo: ${FRAME_INTERVAL_SECONDS}s)`);
+
+      } catch (error) {
+        console.error('❌ Erro ao iniciar detecção:', error);
+        updateVideoStatus('🔴 Erro ao conectar à câmera');
+        
+        // Tentar reconectar após 10 segundos
+        setTimeout(() => {
+          console.log('🔄 Tentando reconectar...');
+          startVideoDetection();
+        }, 10000);
+      }
+    }
+
+    async function processCurrentFrame() {
+      if (!videoElement || !canvasElement || !isProcessingVideo) return;
+
+      const parkingId = getParkingIdFromURL();
+      const currentTime = videoElement.currentTime;
+
+      console.log(`⏱️ Processando frame no tempo ${currentTime.toFixed(1)}s`);
+
+      try {
+        // Redimensionar canvas para resolução padrão (mesma do vídeo de referência)
+        const STANDARD_WIDTH = 1280;
+        const STANDARD_HEIGHT = 720;
+        
+        canvasElement.width = STANDARD_WIDTH;
+        canvasElement.height = STANDARD_HEIGHT;
+
+        // Extrair frame atual e redimensionar
+        const ctx = canvasElement.getContext('2d');
+        ctx.drawImage(videoElement, 0, 0, STANDARD_WIDTH, STANDARD_HEIGHT);
+
+        // Converter canvas para blob
+        const blob = await new Promise(resolve => {
+          canvasElement.toBlob(resolve, 'image/jpeg', 0.95);
+        });
+
+        // Criar FormData
+        const formData = new FormData();
+        formData.append('parking_id', parkingId);
+        formData.append('image', blob, 'frame.jpg');
+
+        // Enviar para API
+        const response = await fetch(`${API_BASE_URL}/api/parking/detect`, {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!response.ok) {
+          throw new Error(`Erro HTTP: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (data.success) {
+          console.log('✅ Detecção concluída:', {
+            occupied: data.occupied,
+            empty: data.empty,
+            rate: data.occupancy_rate
+          });
+
+          // Atualizar UI com os novos dados
+          await updateUIWithDetection(data);
+          updateVideoStatus(`🟢 Última detecção: ${new Date().toLocaleTimeString()}`);
+        } else {
+          console.error('❌ Erro na detecção:', data.message);
+        }
+
+      } catch (error) {
+        console.error('❌ Erro ao processar frame:', error);
+        updateVideoStatus('🔴 Erro na detecção');
+      }
+    }
+
+    async function updateUIWithDetection(data) {
+      // Atualizar estatísticas
+      document.getElementById('total-spots').textContent = data.total_slots || 0;
+      document.getElementById('free-spots').textContent = data.empty || 0;
+      document.getElementById('occupied-spots').textContent = data.occupied || 0;
+      document.getElementById('occupancy-rate').textContent = 
+        data.occupancy_rate ? `${Math.round(data.occupancy_rate)}%` : '0%';
+
+      // Atualizar timestamp
+      const date = new Date();
+      document.getElementById('last-updated').textContent =
+        `Última atualização: ${date.toLocaleString('pt-BR')}`;
+
+      // Buscar status completo para atualizar o layout das vagas
+      const parkingId = getParkingIdFromURL();
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/parking/status?parking_id=${parkingId}`);
+        if (response.ok) {
+          const statusData = await response.json();
+          if (statusData.success && statusData.layout_groups && statusData.layout_groups.length > 0) {
+            renderSlotLayout(statusData.layout_groups);
+          }
+        }
+      } catch (error) {
+        console.error('Erro ao buscar layout atualizado:', error);
+      }
+    }
+
+
+    function updateVideoStatus(message) {
+      const statusEl = document.getElementById('video-status');
+      if (statusEl) {
+        statusEl.textContent = message;
+      }
+    }
+
+    // ========== INICIALIZAÇÃO ==========
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      console.log('Iniciando sistema de monitoramento');
+      
+      // Carregar dados iniciais da área
+      await loadParkingData();
+
+      // Aguardar 2 segundos para garantir que a UI está pronta
+      setTimeout(() => {
+        console.log('Iniciando detecção automática');
+        startVideoDetection();
+      }, 2000);
     });
 </script>
 </body>
