@@ -213,7 +213,8 @@ class ParkingManager:
         results_folder = os.path.join(parking_folder, "results")
         os.makedirs(results_folder, exist_ok=True)
         
-        output_image = os.path.join(results_folder, f"detection_{datetime.now().strftime('%Y%m%d_%H%M%S')}.jpg")
+        # Sempre salvar como detection.jpg (sobrescreve a anterior)
+        output_image = os.path.join(results_folder, "detection.jpg")
         
         results = detector.detect_cars_in_image(
             image_path,
@@ -226,8 +227,8 @@ class ParkingManager:
         results["parking_name"] = metadata["name"]
         results["annotated_image"] = output_image
         
-        # Salvar histórico
-        history_file = os.path.join(results_folder, f"history_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json")
+        # Salvar histórico (sempre sobrescreve o mesmo arquivo)
+        history_file = os.path.join(results_folder, "history.json")
         with open(history_file, 'w') as f:
             json.dump(results, f, indent=2)
         

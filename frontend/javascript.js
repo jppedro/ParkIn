@@ -5,6 +5,8 @@ function abrirLink(url) {
 }
 
 function logout() {
+  localStorage.removeItem("userRole");
+  window.location.href = "login.html";
   console.log("Logout clicado!");
   alert("Função Logout() chamada!");
 }

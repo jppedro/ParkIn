@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nova Área - ParkIn</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .form-container {
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 30px;
+      background: #1e1e1e;
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    .form-header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .form-header h1 {
+      font-size: 32px;
+      color: #fff;
+      margin-bottom: 10px;
+    }
+
+    .form-header p {
+      color: #888;
+      font-size: 16px;
+    }
+
+    .form-group {
+      margin-bottom: 25px;
+    }
+
+    .form-group label {
+      display: block;
+      color: #fff;
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .form-group label .required {
+      color: #ff4444;
+    }
+
+    .form-group input[type="text"],
+    .form-group textarea {
+      width: 100%;
+      padding: 12px 16px;
+      background: #2b2b2b;
+      border: 2px solid #3a3a3a;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 16px;
+      transition: border-color 0.3s;
+    }
+
+    .form-group input[type="text"]:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: #4CAF50;
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    .file-upload-area {
+      border: 2px dashed #3a3a3a;
+      border-radius: 8px;
+      padding: 40px;
+      text-align: center;
+      background: #2b2b2b;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .file-upload-area:hover {
+      border-color: #4CAF50;
+      background: #333;
+    }
+
+    .file-upload-area.dragover {
+      border-color: #4CAF50;
+      background: #2d4a2e;
+    }
+
+    .file-upload-area input[type="file"] {
+      display: none;
+    }
+
+    .file-upload-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+
+    .file-upload-text {
+      color: #888;
+      font-size: 16px;
+      margin-bottom: 8px;
+    }
+
+    .file-upload-hint {
+      color: #666;
+      font-size: 14px;
+    }
+
+    .image-preview {
+      margin-top: 20px;
+      display: none;
+    }
+
+    .image-preview img {
+      max-width: 100%;
+      border-radius: 8px;
+      border: 2px solid #3a3a3a;
+    }
+
+    .image-preview-info {
+      margin-top: 10px;
+      color: #888;
+      font-size: 14px;
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 16px;
+      margin-top: 40px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 14px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+    }
+
+    .btn-primary:disabled {
+      background: #555;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-secondary {
+      background: #3a3a3a;
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background: #4a4a4a;
+    }
+
+    .loading-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .loading-overlay.active {
+      display: flex;
+    }
+
+    .loading-content {
+      text-align: center;
+      color: white;
+    }
+
+    .spinner {
+      border: 4px solid #3a3a3a;
+      border-top: 4px solid #4CAF50;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .alert {
+      padding: 16px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .alert.success {
+      background: #2d4a2e;
+      border: 1px solid #4CAF50;
+      color: #4CAF50;
+    }
+
+    .alert.error {
+      background: #4a2d2d;
+      border: 1px solid #ff4444;
+      color: #ff4444;
+    }
+
+    .alert.active {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="logo">🅿️ ParkIn</div>
+    <ul>
+      <li><a href="index.html">Início</a></li>
+      <li><a href="estacionamento.html" class="active">Estacionamentos</a></li>
+      <li><a href="login.html">Sair</a></li>
+    </ul>
+  </nav>
+
+  <div class="form-container">
+    <div class="form-header">
+      <h1>Nova Área de Estacionamento</h1>
+      <p>Preencha os dados abaixo para criar uma nova área</p>
+    </div>
+
+    <div id="alert" class="alert"></div> 
+
+    <form id="create-area-form">
+      <div class="form-group">
+        <label for="name">
+          Nome da Área <span class="required">*</span>
+        </label>
+        <input 
+          type="text" 
+          id="name" 
+          name="name" 
+          placeholder="Ex: Estacionamento Principal"
+          required
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="description">
+          Descrição
+        </label>
+        <textarea 
+          id="description" 
+          name="description" 
+          placeholder="Descreva a localização ou características da área..."
+        ></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>
+          Imagem de Referência <span class="required">*</span>
+        </label>
+        <div class="file-upload-area" id="file-upload-area">
+          <input 
+            type="file" 
+            id="image" 
+            name="image" 
+            accept="image/jpeg,image/jpg,image/png,image/bmp"
+            required
+          >
+          <div class="file-upload-icon">📷</div>
+          <div class="file-upload-text">
+            Clique para selecionar ou arraste a imagem aqui
+          </div>
+          <div class="file-upload-hint">
+            Formatos aceitos: JPG, PNG, BMP (máx. 10MB)
+          </div>
+        </div>
+        <div class="image-preview" id="image-preview">
+          <img id="preview-img" src="" alt="Preview">
+          <div class="image-preview-info" id="preview-info"></div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary" onclick="window.location.href='estacionamento.html'">
+          ← Cancelar
+        </button>
+        <button type="submit" class="btn btn-primary" id="submit-btn">
+          Criar Área
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <div class="loading-overlay" id="loading-overlay">
+    <div class="loading-content">
+      <div class="spinner"></div>
+      <p>Criando área de estacionamento...</p>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE_URL = 'http://localhost:5001';
+
+    // Elementos
+    const form = document.getElementById('create-area-form');
+    const fileInput = document.getElementById('image');
+    const fileUploadArea = document.getElementById('file-upload-area');
+    const imagePreview = document.getElementById('image-preview');
+    const previewImg = document.getElementById('preview-img');
+    const previewInfo = document.getElementById('preview-info');
+    const loadingOverlay = document.getElementById('loading-overlay');
+    const alertBox = document.getElementById('alert');
+    const submitBtn = document.getElementById('submit-btn');
+
+    // Upload de arquivo - Click
+    fileUploadArea.addEventListener('click', () => {
+      fileInput.click();
+    });
+
+    // Upload de arquivo - Change
+    fileInput.addEventListener('change', (e) => {
+      handleFileSelect(e.target.files[0]);
+    });
+
+    // Drag and Drop
+    fileUploadArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      fileUploadArea.classList.add('dragover');
+    });
+
+    fileUploadArea.addEventListener('dragleave', () => {
+      fileUploadArea.classList.remove('dragover');
+    });
+
+    fileUploadArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      fileUploadArea.classList.remove('dragover');
+      
+      const file = e.dataTransfer.files[0];
+      if (file && file.type.startsWith('image/')) {
+        fileInput.files = e.dataTransfer.files;
+        handleFileSelect(file);
+      }
+    });
+
+    // Processar arquivo selecionado
+    function handleFileSelect(file) {
+      if (!file) return;
+
+      // Validar tipo
+      const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/bmp'];
+      if (!validTypes.includes(file.type)) {
+        showAlert('Formato de imagem inválido. Use JPG, PNG ou BMP.', 'error');
+        return;
+      }
+
+      // Validar tamanho (10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        showAlert('Imagem muito grande. Tamanho máximo: 10MB.', 'error');
+        return;
+      }
+
+      // Preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        previewImg.src = e.target.result;
+        imagePreview.style.display = 'block';
+        
+        // Info
+        const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+        previewInfo.textContent = `📁 ${file.name} (${sizeMB} MB)`;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // Submit do formulário
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const name = document.getElementById('name').value.trim();
+      const description = document.getElementById('description').value.trim();
+      const image = fileInput.files[0];
+
+      // Validações
+      if (!name) {
+        showAlert('Por favor, informe o nome da área.', 'error');
+        return;
+      }
+
+      if (!image) {
+        showAlert('Por favor, selecione uma imagem de referência.', 'error');
+        return;
+      }
+
+      // Criar FormData
+      const formData = new FormData();
+      formData.append('name', name);
+      if (description) {
+        formData.append('description', description);
+      }
+      formData.append('reference_image', image);
+
+      // Enviar
+      try {
+        loadingOverlay.classList.add('active');
+        submitBtn.disabled = true;
+
+        const response = await fetch(`${API_BASE_URL}/api/parking/setup`, {
+          method: 'POST',
+          body: formData
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          showAlert(`✅ Área "${name}" criada com sucesso!`, 'success');
+          
+          // Redirecionar após 2 segundos
+          setTimeout(() => {
+            window.location.href = 'estacionamento.html';
+          }, 2000);
+        } else {
+          throw new Error(data.error || 'Erro ao criar área');
+        }
+
+      } catch (error) {
+        console.error('Erro:', error);
+        showAlert(`❌ Erro ao criar área: ${error.message}`, 'error');
+        submitBtn.disabled = false;
+      } finally {
+        loadingOverlay.classList.remove('active');
+      }
+    });
+
+    // Mostrar alerta
+    function showAlert(message, type) {
+      alertBox.textContent = message;
+      alertBox.className = `alert ${type} active`;
+      
+      // Auto-hide após 5 segundos (apenas para erros)
+      if (type === 'error') {
+        setTimeout(() => {
+          alertBox.classList.remove('active');
+        }, 5000);
+      }
+    }
+  </script>
+</body>
+</html>

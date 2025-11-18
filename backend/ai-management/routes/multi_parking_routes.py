@@ -308,57 +308,41 @@ class MultiParkingRoutes:
                     'error': f'Vagas não definidas para {parking_id}. Use /define-slots primeiro.'
                 }), 400
             
-            ext = filename_lower.split('.')[-1]
-            temp_filename = f"video_{parking_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.{ext}"
-            video_path = os.path.join(Config.UPLOAD_FOLDER, temp_filename)
-            file.save(video_path)
+            # Salvar vídeo na pasta da área (não mais em uploads/)
+            parking_folder = parking_manager._get_parking_folder(parking_id)
+            video_destination = os.path.join(parking_folder, 'video.mp4')
             
-            print(f"✅ Vídeo salvo: {video_path}")
+            # Salvar vídeo
+            file.save(video_destination)
             
-            video_processor = VideoProcessor(frame_interval_seconds=frame_interval)
-            video_info = VideoProcessor.get_video_info(video_path)
+            print(f"Vídeo salvo em: {video_destination}")
+            
+            # Obter informações do vídeo
+            from services.video_processor import VideoProcessor
+            video_info = VideoProcessor.get_video_info(video_destination)
             
             print(f"📹 Informações do vídeo:")
             print(f"   Duração: {video_info['duration_formatted']}")
             print(f"   FPS: {video_info['fps']:.2f}")
             print(f"   Resolução: {video_info['width']}x{video_info['height']}")
             
-            parking_folder = parking_manager._get_parking_folder(parking_id)
-            slots_file = os.path.join(parking_folder, "parking_slots.json")
+            # Atualizar metadata com informações do vídeo
+            metadata['video_uploaded'] = True
+            metadata['video_info'] = video_info
+            metadata['video_uploaded_at'] = datetime.now().isoformat()
             
-            print(f"📂 Carregando vagas de: {slots_file}")
-            if not os.path.exists(slots_file):
-                return jsonify({
-                    'error': f'Arquivo parking_slots.json não encontrado em: {slots_file}'
-                }), 404
-            
-            detector = ParkingDetector(model_path="models/best.pt", slots_file=slots_file)
-            
-            reference_image_path = metadata.get('reference_image')
-            reference_dimensions = None
-            if reference_image_path and os.path.exists(reference_image_path):
-                import cv2
-                ref_img = cv2.imread(reference_image_path)
-                if ref_img is not None:
-                    ref_height, ref_width = ref_img.shape[:2]
-                    reference_dimensions = (ref_width, ref_height)
-                    print(f"📏 Imagem de referência: {ref_width}x{ref_height}")
-            
-            summary = video_processor.process_video(
-                video_path=video_path,
-                parking_id=parking_id,
-                parking_name=metadata['name'],
-                detector=detector,
-                parking_folder=parking_folder,
-                reference_dimensions=reference_dimensions
-            )
-            
-            summary['video_info'] = video_info
+            # Salvar metadata atualizado
+            metadata_file = os.path.join(parking_folder, 'metadata.json')
+            with open(metadata_file, 'w') as f:
+                json.dump(metadata, f, indent=2)
             
             return jsonify({
                 'success': True,
-                'message': 'Vídeo processado com sucesso',
-                **summary
+                'message': 'Vídeo salvo com sucesso',
+                'parking_id': parking_id,
+                'parking_name': metadata['name'],
+                'video_info': video_info,
+                'video_path': f'/api/parking/video/{parking_id}'
             }), 200
             
         except ValueError as e:
@@ -515,5 +499,32 @@ class MultiParkingRoutes:
 
             return send_file(image_path, mimetype='image/jpeg')
 
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+    
+    @staticmethod
+    @multi_parking_bp.route('/video/<parking_id>', methods=['GET'])
+    def get_parking_video(parking_id):
+        """
+        Retorna o vídeo de uma área de estacionamento
+        """
+        try:
+            metadata = parking_manager.get_parking_metadata(parking_id)
+            
+            if not metadata:
+                return jsonify({'error': 'Área não encontrada'}), 404
+            
+            parking_folder = parking_manager._get_parking_folder(parking_id)
+            if not parking_folder:
+                return jsonify({'error': 'Pasta da área não encontrada'}), 404
+            
+            # Procurar vídeo na pasta da área
+            video_path = os.path.join(parking_folder, 'video.mp4')
+            
+            if not os.path.exists(video_path):
+                return jsonify({'error': 'Vídeo não encontrado para esta área'}), 404
+            
+            return send_file(video_path, mimetype='video/mp4')
+        
         except Exception as e:
             return jsonify({'error': str(e)}), 500

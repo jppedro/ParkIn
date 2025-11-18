@@ -114,7 +114,7 @@ class ParkingDetector:
             
             self.slots[i]['coordinates'] = scaled_coords
     
-    def detect_cars_in_image(self, image_path, save_result=False, output_path=None, reference_dimensions=None):
+    def detect_cars_in_image(self, image_path, save_result=False, output_path=None):
         """
         Detecta carros e calcula ocupação das vagas em uma IMAGEM
         
@@ -144,18 +144,12 @@ class ParkingDetector:
         img_height, img_width = image.shape[:2]
         print(f"   Dimensões: {img_width}x{img_height}")
         
-        # Escalar coordenadas se necessário
-        if reference_dimensions:
-            ref_width, ref_height = reference_dimensions
-            if (ref_width != img_width) or (ref_height != img_height):
-                self.scale_coordinates(ref_width, ref_height, img_width, img_height)
-        
         # Detectar carros
         results = self.model.predict(
             image_path, 
-            conf=self.confidence_threshold,
-            iou=0.5,  # Threshold de IoU para NMS (Non-Maximum Suppression)
-            imgsz=1280,
+            conf=0.15,  # Reduzido para detectar mais carros (era 0.25)
+            iou=0.4,    # Reduzido para permitir carros próximos (era 0.5)
+            imgsz=1920, # Aumentado para melhor detecção (era 1280)
             max_det=300,
             verbose=False
         )

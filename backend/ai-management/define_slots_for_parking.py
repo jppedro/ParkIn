@@ -42,7 +42,7 @@ class ParkingSlotDefiner:
         self.slots = []
         self.window_name = f"Definir Vagas - {self.metadata['name']}"
         
-        print(f"\n✅ Área carregada: {self.metadata['name']}")
+        print(f"\nÁrea carregada: {self.metadata['name']}")
         print(f"   Parking ID: {parking_id}")
         print(f"   Imagem: {self.image_path}")
         print(f"   Dimensões: {self.image.shape[1]}x{self.image.shape[0]}")

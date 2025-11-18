@@ -202,6 +202,29 @@ body {
   color: #9E9E9E;
 }
 
+.btn-nova-area {
+  margin-top: 20px;
+  padding: 12px 32px;
+  background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+}
+
+.btn-nova-area:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+}
+
+.btn-nova-area:active {
+  transform: translateY(0);
+}
+
 .estacionamento-lista {
   display: flex;
   flex-direction: column;
