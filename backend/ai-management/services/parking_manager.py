@@ -19,19 +19,12 @@ from services.parking_detector import ParkingDetector
 class ParkingManager:
     
     def __init__(self, data_folder="parking_data"):
-        """
-        Inicializa o gerenciador de múltiplas áreas de estacionamento
-        
-        Args:
-            data_folder: Pasta onde ficam os dados de cada parking_id
-        """
-
         current_dir = os.path.dirname(os.path.abspath(__file__))
         ai_management_dir = os.path.dirname(current_dir)
         self.data_folder = os.path.join(ai_management_dir, data_folder)
         self.index_file = os.path.join(self.data_folder, "parking_index.json")
         
-        print(f"🔍 ParkingManager inicializado")
+        print(f"ParkingManager inicializado")
         print(f"   Data folder: {self.data_folder}")
         
         # Criar estrutura de pastas
@@ -41,7 +34,6 @@ class ParkingManager:
         self._load_index()
     
     def _load_index(self):
-        """Carrega índice de estacionamentos"""
         if os.path.exists(self.index_file):
             with open(self.index_file, 'r') as f:
                 self.index = json.load(f)
@@ -50,7 +42,6 @@ class ParkingManager:
             self._save_index()
     
     def _save_index(self):
-        """Salva índice de estacionamentos"""
         with open(self.index_file, 'w') as f:
             json.dump(self.index, f, indent=2)
     
@@ -110,16 +101,6 @@ class ParkingManager:
         return parking_id
     
     def define_slots(self, parking_id: str, slots: List[Dict]) -> bool:
-        """
-        Define as vagas para uma área de estacionamento
-        
-        Args:
-            parking_id: ID da área
-            slots: Lista de vagas [{"id": 1, "coordinates": [[x1,y1], [x2,y2], ...]}, ...]
-        
-        Returns:
-            bool: True se sucesso
-        """
         parking_folder = self._get_parking_folder(parking_id)
         if not parking_folder:
             raise ValueError(f"Área de estacionamento não encontrada: {parking_id}")
@@ -185,17 +166,6 @@ class ParkingManager:
         return result
     
     def detect_occupancy(self, parking_id: str, image_path: str, model_path: str = "models/best.pt") -> Dict:
-        """
-        Detecta ocupação de vagas em uma área específica
-        
-        Args:
-            parking_id: ID da área
-            image_path: Caminho da imagem para análise
-            model_path: Caminho do modelo YOLO
-        
-        Returns:
-            Dict com resultados da detecção
-        """
         parking_folder = self._get_parking_folder(parking_id)
         if not parking_folder:
             raise ValueError(f"Área de estacionamento não encontrada: {parking_id}")

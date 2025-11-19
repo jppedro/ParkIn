@@ -9,13 +9,6 @@ from datetime import datetime
 class ParkingDetector:
     
     def __init__(self, model_path="models/best.pt", slots_file="parking_slots.json"):
-        """
-        Inicializa o detector
-        
-        Args:
-            model_path: Caminho para modelo YOLO (detecta carros)
-            slots_file: Caminho para JSON com coordenadas das vagas
-        """
         # Carregar modelo YOLO
         if not os.path.exists(model_path):
             raise FileNotFoundError(f"Modelo não encontrado: {model_path}")
@@ -39,7 +32,7 @@ class ParkingDetector:
         # Configurações
         self.confidence_threshold = 0.25  # Confiança mínima para detectar carros (reduzido para detectar mais)
         self.overlap_threshold = 0.3      # 30% de sobreposição para considerar ocupada
-        self.reference_dimensions = None  # Dimensões da imagem de referência
+        self.reference_dimensions = None  
     
     def _point_in_polygon(self, point, polygon):
         """Verifica se um ponto está dentro de um polígono"""
@@ -62,10 +55,6 @@ class ParkingDetector:
         return inside
     
     def _calculate_overlap_percentage(self, box, polygon):
-        """
-        Calcula % de sobreposição entre bounding box do carro e polígono da vaga
-        Retorna valor entre 0.0 (sem sobreposição) e 1.0 (100% sobreposto)
-        """
         x1, y1, x2, y2 = box
         
         # Grid de pontos para testar sobreposição (7x7 = 49 pontos)
@@ -85,15 +74,6 @@ class ParkingDetector:
         return overlap_percentage
     
     def scale_coordinates(self, reference_width, reference_height, target_width, target_height):
-        """
-        Escala as coordenadas das vagas para uma nova resolução
-        
-        Args:
-            reference_width: Largura da imagem de referência
-            reference_height: Altura da imagem de referência
-            target_width: Largura da imagem alvo
-            target_height: Altura da imagem alvo
-        """
         scale_x = target_width / reference_width
         scale_y = target_height / reference_height
         
@@ -115,25 +95,6 @@ class ParkingDetector:
             self.slots[i]['coordinates'] = scaled_coords
     
     def detect_cars_in_image(self, image_path, save_result=False, output_path=None):
-        """
-        Detecta carros e calcula ocupação das vagas em uma IMAGEM
-        
-        Args:
-            image_path: Caminho da imagem
-            save_result: Se True, salva imagem com detecções
-            output_path: Caminho para salvar resultado (opcional)
-        
-        Returns:
-            dict: {
-                'total_slots': int,
-                'occupied': int,
-                'empty': int,
-                'occupancy_rate': float,
-                'slots': [{'id', 'status', 'has_car'}],
-                'cars_detected': int,
-                'timestamp': str
-            }
-        """
         print(f"\n🔍 Processando imagem: {image_path}")
         
         # Carregar imagem

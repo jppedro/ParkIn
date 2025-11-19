@@ -2,6 +2,7 @@
 VideoProcessor - Processa vídeos de drone e atualiza parking_slots.json periodicamente
 """
 
+from warnings import deprecated
 import cv2
 import os
 import json
@@ -10,6 +11,7 @@ from typing import Dict, List, Optional, Callable
 from pathlib import Path
 
 
+@deprecated
 class VideoProcessor:
     
     def __init__(self, frame_interval_seconds: int = 10):
